@@ -1,0 +1,36 @@
+    [  Identifiers  ]
+
+ID       254
+
+
+    [  Coupled OscIDs  ]
+
+# which ID's are coupled by this map
+2,5   3,7
+2    6
+
+
+    [  Cmap data  ]
+
+defmap dud
+# just for testing purposes (just like the rest of this file...)
+4 6 8 2
+4 2 5 9
+
+
+    [  Python Code  ]
+
+def pre_calc(FILES, RunPar, WS, coupmap):
+    pass
+
+
+def prep_coupling(FILES, RunPar, WS, coupmap):
+    # called once for every frame, to do some preparations, if desired
+    pass
+
+
+def calc_coupling(OscGroupi, OscGroupj, FILES, RunPar, WS, coupmap):
+    # called when the coupling between 2 given groups is needed
+    # must return the coupling between those groups.
+    pass
+

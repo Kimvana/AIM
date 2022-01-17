@@ -1,0 +1,80 @@
+# topology and trajectory files, including folder, relative to input file
+
+topfile                          md_0_1.tpr
+trjfile                          md_0_1_short.xtc
+
+
+# support files location
+
+sourcedir                        ../sourcefiles
+resnamesfile                     resnames.dat
+atnamesfile                      atnames_Gromacs.dat
+libfile                          DLLs/AIMV8-5/x64/Debug/AIMV8-5.dll
+libfile_Win32                    AIMV9-1_32.dll
+libfile_Win64                    AIMV9-1_64.dll
+libfile_MacOS                    AIMV9-1.dylib
+libfile_Linux                    AIMV9-1.so
+use_c_lib                        False
+extramapdir                      ../extra_maps
+
+
+
+# output files, excluding folder
+
+outfilename                      [now]AIM_[version]_Hamiltonian
+outdipfilename                   [now]AIM_[version]_Dipoles
+outposfilename                   [now]AIM_[version]_AtomPos
+outparfilename                   [now]AIM_[version]_Parameters.txt
+#Raman#
+outramfilename                   [now]AIM_[version]_RamanTensor
+
+logfilename                      [now]AIM_[version].log
+proffilename                     [now]AIM_[version].pstats
+pngfilename                      [now]AIM_[version].png
+
+
+
+# Output file settings
+
+output_format                    txt  # bin, txt
+output_type                      Ham Dip Pos  # Ham, Dip, Ram, Pos
+
+Verbose                          2
+Verbose_log                      3
+profiler                         False
+pngout                           False
+
+
+
+# Run Parameters
+
+influencers                      All
+oscillators                      AmideBB AmideSC
+apply_dd_coupling                Same       # All, None, Same, Different
+map_choice                       Skinner
+Dipole_choice                    Torii
+coupling_choice                  TDCTasumi
+NN_coupling_choice               GLDP
+AtomPos_choice                   C
+start_frame                      0
+nFrames_to_calculate             999999999
+end_frame                        999999999
+max_time                         999999     # time in minutes. 999999 = ca. 2y
+SphereSize                       20
+
+replicate_orig_AIM               False
+NSA_toggle                       False
+NSA_nframes                      50
+NSA_spheresize                   25
+
+atom_based_chainID               False
+use_protein_specials             True
+Scale_LRCoupling                 1
+
+Use_AmGroup_selection_criteria   False
+resnum_whitelist
+resnum_blacklist
+resname_whitelist
+resname_blacklist
+
+TreatNN                          True

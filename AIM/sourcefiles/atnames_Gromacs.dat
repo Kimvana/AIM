@@ -1,0 +1,11 @@
+C                 C   # Carbon of C=O in backbone
+O                 O   # Oxygen of C=O in backbone
+N                 N   # Nitrogen in backbone
+H                 H   # Hydrogen on N in backbone
+CA                CA  # alpha-carbon (other C) in backbone
+
+# If a residue is a terminal residue (bonded through backbone to fewer than two other residues), it has extra atoms: on the low-index side, the chain has extra H on the N atom, while on the high-index side, there is a second oxygen on the carbon. Below, the names of these extra atoms are defined.
+TermH             H2 H3
+TermO             OC1 OC2
+
+
