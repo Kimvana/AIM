@@ -1,5 +1,7 @@
 import sys
 
+import sourcecode.DataConversion as AIM_DC
+
 
 def vprint(threshold, texttoprint, logfilename, RunPar):
     """
@@ -138,3 +140,396 @@ def finwarning(function_warning, logfilename, RunPar, n=1, extra_header=""):
             RunPar.backlog.append([0, header])
         else:
             vprint(0, header, logfilename, RunPar)
+
+
+def finprint_composition(FILES, RunPar, WS):
+    nchains = len(WS.fincalcprints["molnum_prot_chains"])
+    vprintl(1, [
+        "amount of chains: ", nchains,
+        "\n"], FILES.logfilename, RunPar)
+    nBBrawall = 0
+    nBBall = 0
+    counter = 0
+    totaloftype = {}
+    accounted_groups = set()
+    for molnum in WS.fincalcprints["molnum_prot_chains"]:
+        if "AmideBB" in RunPar.oscillators:
+            nBBraw = WS.fincalcprints["nBBraw" + str(molnum)]
+            nBB = WS.fincalcprints["nBBused" + str(molnum)]
+            tothere = nBB
+        else:
+            tothere = 0
+        vprint(
+            2, "Chain " + str(counter) + ": ", FILES.logfilename, RunPar)
+        if "AmideBB" in RunPar.oscillators:
+            vprint(
+                3, "Amide groups in backbone: " + str(nBBraw),
+                FILES.logfilename, RunPar)
+            vprint(
+                2, "Amide groups in backbone considered: " + str(nBB),
+                FILES.logfilename, RunPar)
+        for ID in WS.fincalcprints["OscID_present"]:
+            if not RunPar.ExtraMaps[ID].inprot:
+                continue
+            nOsc = 0
+            for OscGroup in range(WS.res_desired_len):
+                if (
+                    WS.OscID[OscGroup] == ID
+                    and
+                    WS.molnums[WS.AllOscGroups[OscGroup, 6]] == molnum
+                ):
+                    nOsc += 1
+                    accounted_groups.add(OscGroup)
+            if ID in totaloftype:
+                totaloftype[ID] += nOsc
+            else:
+                totaloftype[ID] = nOsc
+            tothere += nOsc
+            IDname = RunPar.ExtraMaps[ID].name
+            vprint(
+                2, "Groups of type " + IDname + " considered: "
+                + str(nOsc), FILES.logfilename, RunPar)
+        vprint(
+            2, "Total amount of groups considered: "
+            + str(tothere) + "\n", FILES.logfilename, RunPar)
+        counter += 1
+        if "AmideBB" in RunPar.oscillators:
+            nBBrawall += nBBraw
+            nBBall += nBB
+    # after looking at protein chains, now consider the groups not part of
+    # a protein chain
+    vprint(2, "Groups outside of protein: ", FILES.logfilename, RunPar)
+    tothere = 0
+    for ID in WS.fincalcprints["OscID_present"]:
+        nOsc = 0
+        for OscGroup in range(WS.res_desired_len):
+            if (
+                WS.OscID[OscGroup] == ID
+                and
+                OscGroup not in accounted_groups
+            ):
+                nOsc += 1
+        if ID in totaloftype:
+            totaloftype[ID] += nOsc
+        else:
+            totaloftype[ID] = nOsc
+        tothere += nOsc
+        IDname = RunPar.ExtraMaps[ID].name
+        vprint(
+            2, "Groups of type " + IDname + " considered: "
+            + str(nOsc), FILES.logfilename, RunPar)
+    vprint(
+        2, "Total amount of groups considered: "
+        + str(tothere) + "\n", FILES.logfilename, RunPar)
+    vprint(1, "\nSumming up:", FILES.logfilename, RunPar)
+    if "AmideBB" in RunPar.oscillators:
+        vprint(
+            2, "Amide groups in backbone: " + str(nBBrawall),
+            FILES.logfilename, RunPar)
+        vprint(
+            1, "Amide groups in backbone considered: " + str(nBBall),
+            FILES.logfilename, RunPar)
+    for ID in WS.fincalcprints["OscID_present"]:
+        nOsc = totaloftype[ID]
+        IDname = RunPar.ExtraMaps[ID].name
+        vprint(
+            2, "Groups of type " + IDname + " considered: "
+            + str(nOsc), FILES.logfilename, RunPar)
+    vprint(
+        1, "Total amount of considered groups: "
+        + str(WS.res_desired_len), FILES.logfilename, RunPar)
+
+    if "AmideBB" in RunPar.oscillators and nBBall > 0:
+        totaloftype[0] = nBBall
+    return totaloftype
+
+
+def finprint_frames(FILES, RunPar, WS):
+    # done with Groups, on to frames
+
+    vprint(1, "\n\nCalculated frames:", FILES.logfilename, RunPar)
+    vprint(
+        1, "\nAnalyzed frames: " + str(RunPar.start_frame) + " to " +
+        str(RunPar.end_frame-1), FILES.logfilename, RunPar)
+    vprint(
+        1, "Available frames: 0 to " + str(len(WS.trj)-1),
+        FILES.logfilename, RunPar)
+
+
+def finprint_time(FILES, RunPar, WS, TIMER):
+    # rounding up the calculation times, print how long it took
+    vprint(1, "\n\nCalculation time:", FILES.logfilename, RunPar)
+    TIMER.Endtime()
+    vprintl(1, [
+        "\ninitialization:", round(TIMER.afterinit0, 3),
+        "s\ntime per frame",
+        round((TIMER.totheavy)/(
+            WS.lastCalcFrame - RunPar.start_frame + 1), 3),
+        "s\ntotal:", round((TIMER.endtime0), 3), "s =",
+        AIM_DC.timestring(round((TIMER.endtime0), 3))
+        ], FILES.logfilename, RunPar)
+
+
+def finprint_references(FILES, RunPar, WS, totaloftype):
+    vprint(1, "\n\nRelevant references:", FILES.logfilename, RunPar)
+
+    # dict of strings of refs + lists of things using them!
+    allrefs = {}
+
+    # collect all ID's on which a certain calculation is performed
+    freqID = []
+    dipID = []
+    ramID = []
+    coupID = []
+
+    if "Dip" in RunPar.output_type:
+        for key in totaloftype.keys():
+            if key not in dipID:
+                dipID.append(key)
+
+    if "Ham" in RunPar.output_type:
+        coupID = WS.coup_used.keys()
+        for key in totaloftype.keys():
+            if key not in freqID:
+                freqID.append(key)
+
+        # for TDCgen, the calculated dipole moments are used.
+        if 1 in WS.coup_used:
+            for OscGroup in WS.coup_used[1]:
+                if WS.OscID[OscGroup] not in dipID:
+                    dipID.append(WS.OscID[OscGroup])
+
+    if "Ram" in RunPar.output_type:
+        for key in totaloftype.keys():
+            if key not in ramID:
+                ramID.append(key)
+
+    if 0 in freqID or 0 in dipID:
+        usedmaptypes = ["mapGen"]
+        found = False
+        for OscGroup in range(WS.res_desired_len):
+            if WS.PrePro[OscGroup] == 1:
+                found = True
+                break
+        if found:
+            usedmaptypes.append("mapPro")
+
+    for ID in freqID:
+        if ID == 0:
+            for reference in WS.AllMaps.Emap.references:
+                if any("E"+x in reference.AIMnotes for x in usedmaptypes):
+                    refstr = str(reference)
+                    if refstr in allrefs:
+                        allrefs[refstr][0].append("AmideBB")
+                    else:
+                        allrefs[refstr] = [
+                            ["AmideBB"],
+                            [],
+                            [],
+                            []
+                        ]
+        else:
+            for entry in RunPar.ExtraMaps[ID].references:
+                if "frequency" in entry[1]:
+                    refstr = str(entry[0])
+                    if refstr in allrefs:
+                        allrefs[refstr][0].append(RunPar.ExtraMaps[ID].name)
+                    else:
+                        allrefs[refstr] = [
+                            [RunPar.ExtraMaps[ID].name],
+                            [],
+                            [],
+                            []
+                        ]
+
+    for ID in dipID:
+        if ID == 0:
+            if RunPar.Dipole_choice == "Torii":
+                for reference in FILES.OtherRefs:
+                    if "DmapTorii" in reference.AIMnotes:
+                        refstr = str(reference)
+                        if refstr in allrefs:
+                            allrefs[refstr][1].append("AmideBB")
+                        else:
+                            allrefs[refstr] = [
+                                [],
+                                ["AmideBB"],
+                                [],
+                                []
+                            ]
+                continue
+            for reference in WS.AllMaps.Dmap.references:
+                if any("D"+x in reference.AIMnotes for x in usedmaptypes):
+                    refstr = str(reference)
+                    if refstr in allrefs:
+                        allrefs[refstr][1].append("AmideBB")
+                    else:
+                        allrefs[refstr] = [
+                            [],
+                            ["AmideBB"],
+                            [],
+                            []
+                        ]
+        else:
+            for entry in RunPar.ExtraMaps[ID].references:
+                if "dipole" in entry[1]:
+                    refstr = str(entry[0])
+                    if refstr in allrefs:
+                        allrefs[refstr][1].append(RunPar.ExtraMaps[ID].name)
+                    else:
+                        allrefs[refstr] = [
+                            [],
+                            [RunPar.ExtraMaps[ID].name],
+                            [],
+                            []
+                        ]
+
+    for ID in ramID:
+        if ID == 0:
+            for reference in FILES.OtherRefs:
+                if "RamanAmide" in reference.AIMnotes:
+                    refstr = str(reference)
+                    if refstr in allrefs:
+                        allrefs[refstr][2].append("AmideBB")
+                    else:
+                        allrefs[refstr] = [
+                            [],
+                            [],
+                            ["AmideBB"],
+                            []
+                        ]
+        else:
+            for entry in RunPar.ExtraMaps[ID].references:
+                if "Raman" in entry[1]:
+                    refstr = str(entry[0])
+                    if refstr in allrefs:
+                        allrefs[refstr][2].append(RunPar.ExtraMaps[ID].name)
+                    else:
+                        allrefs[refstr] = [
+                            [],
+                            [],
+                            [RunPar.ExtraMaps[ID].name],
+                            []
+                        ]
+
+    for ID in coupID:
+        if ID in [2, 3, 4]:
+            coupled = []
+            if 0 in freqID:
+                coupled.append("AmideBB")
+            if 1 in freqID:
+                coupled.append(RunPar.ExtraMaps[1].name)
+            toapp = []
+            for i in coupled:
+                for j in coupled:
+                    toapp.append(i + " and " + j)
+        elif ID in [101, 102]:
+            toapp = ["AmideBB and AmideBB"]
+
+        if ID in [0, 1]:
+            pass
+        elif ID == 2:
+            for reference in FILES.OtherRefs:
+                if "CoupTDCKrimm" in reference.AIMnotes:
+                    refstr = str(reference)
+                    if refstr in allrefs:
+                        allrefs[refstr][3].extend(toapp)
+                    else:
+                        allrefs[refstr] = [
+                            [],
+                            [],
+                            [],
+                            toapp
+                        ]
+        elif ID == 3:
+            for reference in FILES.OtherRefs:
+                if "CoupTDCTasumi" in reference.AIMnotes:
+                    refstr = str(reference)
+                    if refstr in allrefs:
+                        allrefs[refstr][3].extend(toapp)
+                    else:
+                        allrefs[refstr] = [
+                            [],
+                            [],
+                            [],
+                            toapp
+                        ]
+        elif ID == 4:
+            for reference in FILES.OtherRefs:
+                if "CoupTCC" in reference.AIMnotes:
+                    refstr = str(reference)
+                    if refstr in allrefs:
+                        allrefs[refstr][3].extend(toapp)
+                    else:
+                        allrefs[refstr] = [
+                            [],
+                            [],
+                            [],
+                            toapp
+                        ]
+        elif ID == 101:
+            for reference in FILES.OtherRefs:
+                if "CoupTasumi" in reference.AIMnotes:
+                    refstr = str(reference)
+                    if refstr in allrefs:
+                        allrefs[refstr][3].extend(toapp)
+                    else:
+                        allrefs[refstr] = [
+                            [],
+                            [],
+                            [],
+                            toapp
+                        ]
+        elif ID == 102:
+            for reference in FILES.OtherRefs:
+                if "CoupGLDP" in reference.AIMnotes:
+                    refstr = str(reference)
+                    if refstr in allrefs:
+                        allrefs[refstr][3].extend(toapp)
+                    else:
+                        allrefs[refstr] = [
+                            [],
+                            [],
+                            [],
+                            toapp
+                        ]
+
+        else:
+            coupled = []
+            for pair in RunPar.CouplingMaps[ID].coupled:
+                if all(oscID in freqID for oscID in pair):
+                    coupled.append(pair)
+            for reference in RunPar.CouplingMaps[ID].references:
+                refstr = str(reference)
+                if refstr in allrefs:
+                    allrefs[refstr][3].extend(coupled)
+                else:
+                    allrefs[refstr] = [
+                        [],
+                        [],
+                        [],
+                        coupled
+                    ]
+
+    for refstr, used in allrefs.items():
+        vprint(1, "\nFor calculating the:", FILES.logfilename, RunPar)
+        if len(used[0]) > 0:
+            vprint(
+                1, "Frequency of " + ", ".join(used[0]),
+                FILES.logfilename, RunPar)
+        if len(used[1]) > 0:
+            vprint(
+                1, "Dipole moment of " + ", ".join(used[1]),
+                FILES.logfilename, RunPar
+            )
+        if len(used[2]) > 0:
+            vprint(
+                1, "Raman tensor of " + ", ".join(used[2]),
+                FILES.logfilename, RunPar
+            )
+        if len(used[3]) > 0:
+            vprint(
+                1, "Coupling between " + ", ".join(used[3]),
+                FILES.logfilename, RunPar
+            )
+        vprint(1, refstr, FILES.logfilename, RunPar)

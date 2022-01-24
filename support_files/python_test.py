@@ -1,6 +1,10 @@
 
 def pytest():
     global success
+
+    testver = [3, 7, 4]
+    verstr = ".".join([str(i) for i in testver])
+
     try:
         import sys
     except Exception:
@@ -19,7 +23,7 @@ def pytest():
     except Exception:
         print(
             "Could not extract the python version using sys. Please make sure "
-            "you are using at least python version 3.8.3!"
+            "you are using at least python version " + verstr + "!"
         )
         quit()
     else:
@@ -27,25 +31,25 @@ def pytest():
             "Succesfully retrieved python version number using the Sys module"
         )
 
-    if pyvers[0] != 3:
+    if pyvers[0] != testver[0]:
         print(
             "Unsuitable version of python installation detected! Please make "
             "sure to run this script (and all others within AIM) using at "
-            "least python version 3.8.3!"
+            "least python version " + verstr + "!"
         )
         quit()
-    elif pyvers[1] < 8:
+    elif pyvers[1] < testver[1]:
         print(
             "An old version of python has been detected! AIM has been tested "
-            "using python versions 3.8.3 or newer. It is recommended that you "
-            "use a newer version, proceed at your own risk!"
+            "using python versions " + verstr + " or newer. It is recommended "
+            "that you use a newer version, proceed at your own risk!"
         )
         success = False
-    elif pyvers[1] == 8 and pyvers[2] < 3:
+    elif pyvers[1] == testver[1] and pyvers[2] < testver[2]:
         print(
             "An old version of python has been detected! AIM has been tested "
-            "using python versions 3.8.3 or newer. It is recommended that you "
-            "use a newer version, proceed at your own risk!"
+            "using python versions " + verstr + " or newer. It is recommended "
+            "that you use a newer version, proceed at your own risk!"
         )
         success = False
 
@@ -59,6 +63,10 @@ def pytest():
 
 def numpytest():
     global success
+
+    testver = [1, 17, 2]
+    verstr = ".".join([str(i) for i in testver])
+
     try:
         import numpy as np
     except Exception:
@@ -83,25 +91,25 @@ def numpytest():
     else:
         print("Successfully retrieved numpy version number")
 
-    if npvers[0] != 1:
+    if npvers[0] != testver[0]:
         print(
             "An old version of numpy has been detected! AIM has been tested "
-            "using numpy versions 1.18.5 or newer. It is recommended that you "
-            "use a newer version, proceed at your own risk!"
+            "using numpy versions " + verstr + " or newer. It is recommended "
+            "that you use a newer version, proceed at your own risk!"
         )
         success = False
-    elif npvers[1] < 18:
+    elif npvers[1] < testver[1]:
         print(
             "An old version of numpy has been detected! AIM has been tested "
-            "using numpy versions 1.18.5 or newer. It is recommended that you "
-            "use a newer version, proceed at your own risk!"
+            "using numpy versions " + verstr + " or newer. It is recommended "
+            "that you use a newer version, proceed at your own risk!"
         )
         success = False
-    elif npvers[1] == 18 and npvers[2] < 5:
+    elif npvers[1] == testver[1] and npvers[2] < testver[2]:
         print(
             "An old version of numpy has been detected! AIM has been tested "
-            "using numpy versions 1.18.5 or newer. It is recommended that you "
-            "use a newer version, proceed at your own risk!"
+            "using numpy versions " + verstr + " or newer. It is recommended "
+            "that you use a newer version, proceed at your own risk!"
         )
         success = False
 
@@ -115,6 +123,10 @@ def numpytest():
 
 def numbatest():
     global success
+
+    testver = [0, 45, 1]
+    verstr = ".".join([str(i) for i in testver])
+
     try:
         import numba as nb
     except Exception:
@@ -139,25 +151,25 @@ def numbatest():
     else:
         print("Successfully retrieved numba version number")
 
-    if nbvers[0] != 0:
+    if nbvers[0] != testver[0]:
         print(
             "An old version of numba has been detected! AIM has been tested "
-            "using numba versions 1.18.5 or newer. It is recommended that you "
-            "use a newer version, proceed at your own risk!"
+            "using numba versions " + verstr + " or newer. It is recommended "
+            "that you use a newer version, proceed at your own risk!"
         )
         success = False
-    elif nbvers[1] < 50:
+    elif nbvers[1] < testver[1]:
         print(
             "An old version of numba has been detected! AIM has been tested "
-            "using numba versions 1.18.5 or newer. It is recommended that you "
-            "use a newer version, proceed at your own risk!"
+            "using numba versions " + verstr + " or newer. It is recommended "
+            "that you use a newer version, proceed at your own risk!"
         )
         success = False
-    elif nbvers[1] == 50 and nbvers[2] < 1:
+    elif nbvers[1] == testver[1] and nbvers[2] < testver[2]:
         print(
             "An old version of numba has been detected! AIM has been tested "
-            "using numba versions 1.18.5 or newer. It is recommended that you "
-            "use a newer version, proceed at your own risk!"
+            "using numba versions " + verstr + " or newer. It is recommended "
+            "that you use a newer version, proceed at your own risk!"
         )
         success = False
 
@@ -171,6 +183,7 @@ def numbatest():
 
 def MDAtest():
     global success
+
     try:
         import MDAnalysis as MDA
     except Exception:
@@ -198,10 +211,10 @@ def MDAtest():
     if mdavers[0] != 2:
         print(
             "An old version of MDAnalysis has been detected! AIM has been "
-            "tested using both MDAnalysis versions 1.0.0 and 2.0.0. While "
-            "AIM could work using 1.0.0, it is recommended that you "
-            "use a newer version, as the old version can only read in files "
-            "created using older versions of MD software. "
+            "tested using MDAnalysis versions 0.20.1, 1.0.0 and 2.0.0. While "
+            "AIM could work using the lower versions, it is recommended that "
+            "you use a recent version, as the old version can only read in "
+            "files created using older versions of MD software. "
             "Proceed at your own risk!"
         )
         success = False

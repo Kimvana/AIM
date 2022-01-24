@@ -24,3 +24,21 @@ defmap SC
 1925 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
 325 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
+
+defmap Reference
+@article{WatsonHirst2003,
+  title = {Influence of Electrostatic Environment on the Vibrational Frequencies of Proteins},
+  author = {Watson, Tim M. and Hirst, Jonathan D.},
+  year = {2003},
+  month = sep,
+  journal = {J. Phys. Chem. A},
+  volume = {107},
+  number = {35},
+  pages = {6843--6849},
+  issn = {1089-5639, 1520-5215},
+  doi = {10.1021/jp0344500},
+  url = {https://pubs.acs.org/doi/10.1021/jp0344500},
+  urldate = {2022-01-18},
+  langid = {english},
+  AIMnotes = {EmapGen EmapPro EmapSC}
+}

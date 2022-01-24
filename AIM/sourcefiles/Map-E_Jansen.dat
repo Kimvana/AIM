@@ -24,3 +24,37 @@ defmap SC
 0.0 470.338924 -805.084517 0.0 0.0 0.0 -1070.88411 -4141.117612 0.0 0.0 
 0.0 230.233667 -1854.836375 0.0 0.0 0.0 -454.777068 -2049.384247 0.0 0.0
 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
+
+defmap Reference
+@article{JansenKnoester2006a,
+  title = {A Transferable Electrostatic Map for Solvation Effects on Amide I Vibrations and Its Application to Linear and Two-Dimensional Spectroscopy},
+  author = {Jansen, Thomas la Cour and Knoester, Jasper},
+  year = {2006},
+  month = jan,
+  journal = {Chem. Phys.},
+  volume = {124},
+  number = {4},
+  pages = {044502},
+  issn = {0021-9606, 1089-7690},
+  doi = {10.1063/1.2148409},
+  url = {http://aip.scitation.org/doi/10.1063/1.2148409},
+  urldate = {2021-03-09},
+  langid = {english},
+  AIMnotes = {EmapGen EmapSC}
+}
+@article{RoyLessing2011,
+  title = {Solvent and Conformation Dependence of Amide I Vibrations in Peptides and Proteins Containing Proline},
+  author = {Roy, Santanu and Lessing, Joshua and Meisl, Georg and Ganim, Ziad and Tokmakoff, Andrei and Knoester, Jasper and Jansen, Thomas la Cour},
+  year = {2011},
+  month = dec,
+  journal = {Chem. Phys.},
+  volume = {135},
+  number = {23},
+  pages = {234507},
+  issn = {0021-9606, 1089-7690},
+  doi = {10.1063/1.3665417},
+  url = {http://aip.scitation.org/doi/10.1063/1.3665417},
+  urldate = {2021-03-09},
+  langid = {english},
+  AIMnotes = {EmapPro}
+}

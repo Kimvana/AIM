@@ -1,0 +1,66 @@
+    [  Identifiers  ]
+
+name     
+ID       
+inprot   
+
+
+    [  Resname + Atnames  ]
+
+
+    [  Emap data  ]
+
+
+    [  Dmap data  ]
+
+
+    [  Python Code  ]
+
+# Functions required by AIM
+
+def set_references(self, FILES, RunPar):
+    return []
+
+def set_use_G(FILES, RunPar):
+    # return whether the map requires gradient info.
+    return False
+
+
+def set_relevant_j(FILES, RunPar):
+    # return for which atoms the fields should be calculated
+    return []
+
+
+def local_finder(atomlist):
+    # return which atoms should be considered local
+    return []
+
+
+def pre_calc(FILES, RunPar, WS, Map):
+    pass
+
+
+def pre_frame(FILES, RunPar, WS, Map):
+    pass
+
+
+def calc_freq(P, E, G, OscGroup, FILES, RunPar, WS, Map):
+    # return the calculated frequency, and the used rotation matrix.
+    return 0, np.zeros((3, 3), dtype='float32')
+
+
+def calc_dipole(P, E, G, OscGroup, rot_mat, FILES, RunPar, WS, Map):
+    # return the calculated dipole moment
+    return np.zeros(3, dtype='float32'), np.zeros(3, dtype='float32')
+
+
+def calc_raman(OscGroup, P, E, G, rot_mat, FILES, RunPar, WS, Map):
+    """
+    Calculates the Raman tensor of this oscillator.
+    Raman tensor in form of a vector with 6 values (xx xy xz yy yz zz)
+    """
+    return np.zeros(6, dtype='float32')
+
+
+    [  References  ]
+

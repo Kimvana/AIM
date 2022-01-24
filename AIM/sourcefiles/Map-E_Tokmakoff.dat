@@ -24,3 +24,22 @@ defmap SC
 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
+
+defmap Reference
+@article{ReppertTokmakoff2013,
+  title = {Electrostatic Frequency Shifts in Amide I Vibrational Spectra: Direct Parameterization against Experiment},
+  shorttitle = {Electrostatic Frequency Shifts in Amide I Vibrational Spectra},
+  author = {Reppert, Mike and Tokmakoff, Andrei},
+  year = {2013},
+  month = apr,
+  journal = {Chem. Phys.},
+  volume = {138},
+  number = {13},
+  pages = {134116},
+  issn = {0021-9606, 1089-7690},
+  doi = {10.1063/1.4798938},
+  url = {http://aip.scitation.org/doi/10.1063/1.4798938},
+  urldate = {2021-03-09},
+  langid = {english},
+  AIMnotes = {EmapGen EmapPro EmapSC}
+}

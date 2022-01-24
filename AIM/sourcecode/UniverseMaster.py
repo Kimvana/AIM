@@ -1685,132 +1685,13 @@ class Universe:
             "Finished!\n====================\n",
             FILES.logfilename, RunPar)
 
-        nchains = len(self.fincalcprints["molnum_prot_chains"])
-        AIM_PC.vprintl(1, [
-            "amount of chains: ", nchains,
-            "\n"], FILES.logfilename, RunPar)
+        totaloftype = AIM_PC.finprint_composition(FILES, RunPar, self)
 
-        nBBrawall = 0
-        nBBall = 0
-        counter = 0
-        totaloftype = {}
-        accounted_groups = set()
+        AIM_PC.finprint_frames(FILES, RunPar, self)
 
-        for molnum in self.fincalcprints["molnum_prot_chains"]:
-            if "AmideBB" in RunPar.oscillators:
-                nBBraw = self.fincalcprints["nBBraw" + str(molnum)]
-                nBB = self.fincalcprints["nBBused" + str(molnum)]
-                tothere = nBB
-            else:
-                tothere = 0
-            AIM_PC.vprint(2, "Chain " + str(counter) + ": ",
-                          FILES.logfilename, RunPar)
-            if "AmideBB" in RunPar.oscillators:
-                AIM_PC.vprint(3, "Amide groups in backbone: " + str(nBBraw),
-                              FILES.logfilename, RunPar)
-                AIM_PC.vprint(2, "Amide groups in backbone considered: "
-                              + str(nBB), FILES.logfilename, RunPar)
+        AIM_PC.finprint_time(FILES, RunPar, self, TIMER)
 
-            for ID in self.fincalcprints["OscID_present"]:
-                if not RunPar.ExtraMaps[ID].inprot:
-                    continue
-                nOsc = 0
-                for OscGroup in range(self.res_desired_len):
-                    if (
-                        self.OscID[OscGroup] == ID
-                        and
-                        self.molnums[self.AllOscGroups[OscGroup, 6]] == molnum
-                    ):
-                        nOsc += 1
-                        accounted_groups.add(OscGroup)
-                if ID in totaloftype:
-                    totaloftype[ID] += nOsc
-                else:
-                    totaloftype[ID] = nOsc
-                tothere += nOsc
-
-                IDname = RunPar.ExtraMaps[ID].name
-                AIM_PC.vprint(
-                    2, "Groups of type " + IDname + " considered: "
-                    + str(nOsc), FILES.logfilename, RunPar)
-
-            AIM_PC.vprint(
-                2, "Total amount of groups considered: "
-                + str(tothere) + "\n", FILES.logfilename, RunPar)
-
-            counter += 1
-            if "AmideBB" in RunPar.oscillators:
-                nBBrawall += nBBraw
-                nBBall += nBB
-
-        # after looking at protein chains, now consider the groups not part of
-        # a protein chain
-
-        AIM_PC.vprint(2, "Groups outside of protein: ",
-                      FILES.logfilename, RunPar)
-
-        tothere = 0
-        for ID in self.fincalcprints["OscID_present"]:
-            nOsc = 0
-            for OscGroup in range(self.res_desired_len):
-                if (
-                    self.OscID[OscGroup] == ID
-                    and
-                    OscGroup not in accounted_groups
-                ):
-                    nOsc += 1
-            if ID in totaloftype:
-                totaloftype[ID] += nOsc
-            else:
-                totaloftype[ID] = nOsc
-            tothere += nOsc
-            IDname = RunPar.ExtraMaps[ID].name
-            AIM_PC.vprint(
-                2, "Groups of type " + IDname + " considered: "
-                + str(nOsc), FILES.logfilename, RunPar)
-        AIM_PC.vprint(
-            2, "Total amount of groups considered: "
-            + str(tothere) + "\n", FILES.logfilename, RunPar)
-
-        AIM_PC.vprint(1, "\nSumming up:", FILES.logfilename, RunPar)
-        if "AmideBB" in RunPar.oscillators:
-            AIM_PC.vprint(2, "Amide groups in backbone: " + str(nBBrawall),
-                          FILES.logfilename, RunPar)
-            AIM_PC.vprint(
-                1, "Amide groups in backbone considered: " + str(nBBall),
-                FILES.logfilename, RunPar)
-
-        for ID in self.fincalcprints["OscID_present"]:
-            nOsc = totaloftype[ID]
-            IDname = RunPar.ExtraMaps[ID].name
-            AIM_PC.vprint(
-                2, "Groups of type " + IDname + " considered: "
-                + str(nOsc), FILES.logfilename, RunPar)
-
-        AIM_PC.vprint(
-            1, "Total amount of considered groups: "
-            + str(self.res_desired_len), FILES.logfilename, RunPar)
-
-        # done with Groups, on to frames
-
-        AIM_PC.vprint(1, "\n\nCalculated frames:", FILES.logfilename, RunPar)
-        AIM_PC.vprint(1, "\nAnalyzed frames: " + str(RunPar.start_frame)
-                      + " to " + str(RunPar.end_frame-1), FILES.logfilename,
-                      RunPar)
-        AIM_PC.vprint(1, "Available frames: 0 to " + str(len(self.trj)-1),
-                      FILES.logfilename, RunPar)
-
-        # rounding up the calculation times, print how long it took
-        AIM_PC.vprint(1, "\n\nCalculation time:", FILES.logfilename, RunPar)
-        TIMER.Endtime()
-        AIM_PC.vprintl(1, [
-            "\ninitialization:", round(TIMER.afterinit0, 3),
-            "s\ntime per frame",
-            round((TIMER.totheavy)/(
-                self.lastCalcFrame - RunPar.start_frame + 1), 3),
-            "s\ntotal:", round((TIMER.endtime0), 3), "s =",
-            AIM_DC.timestring(round((TIMER.endtime0), 3))
-        ], FILES.logfilename, RunPar)
+        AIM_PC.finprint_references(FILES, RunPar, self, totaloftype)
 
         # if the profiler ran, stop it, and export the collected data
         if RunPar.profiler:
@@ -1835,8 +1716,9 @@ class Universe:
 
         # Aaaaand.... we're done!
         AIM_PC.vprint(
-            1, "\nIf you read this, the program encountered no problems, and "
-            "ran normally!", FILES.logfilename, RunPar)
+            1, "\n" + "*"*72 +
+            "\nIf you read this, the program encountered no problems, and "
+            "ran normally!\n" + "*"*72, FILES.logfilename, RunPar)
 
     def FinishCalc_old(self, TIMER, FILES, RunPar):  # deprecated
         AIM_PC.vprint(1, "\n\n====================\nCalculation "

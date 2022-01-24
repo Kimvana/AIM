@@ -13,6 +13,50 @@ GLN    CD  OE1  CG  NE2  HE21  HE22
 
     [  Python Code  ]
 
+def set_references(self, FILES, RunPar):
+    reflist = []
+
+    # loop over all references in this file
+    for reference in self.rawreferences:
+        reflist.append([reference, reference.AIMnotes])
+
+    Emap = getattr(FILES.AllMaps, "E_" + RunPar.map_choice)
+    for reference in Emap.references:
+        if "EmapSC" in reference.AIMnotes:
+            found = False
+            for entry in reflist:
+                if entry[0] == reference:
+                    found = True
+                    entry[1].append("frequency")
+            if not found:
+                reflist.append([reference, ["frequency"]])
+    
+    if RunPar.Dipole_choice == "Torii":
+        for reference in FILES.OtherRefs:
+            if "DmapTorii" in reference.AIMnotes:
+                found = False
+                for entry in reflist:
+                    if entry[0] == reference:
+                        found = True
+                        entry[1].append("dipole")
+                if not found:
+                    reflist.append([reference, ["dipole"]])
+    else:
+        Dmap = getattr(FILES.AllMaps, "D_" + RunPar.Dipole_choice)
+        for reference in Dmap.references:
+            if "DmapSC" in reference.AIMnotes:
+                found = False
+                for entry in reflist:
+                    if entry[0] == reference:
+                        found = True
+                        entry[1].append("dipole")
+                if not found:
+                    reflist.append([reference, ["dipole"]])
+    
+
+    return reflist
+        
+
 def set_use_G(FILES, RunPar):
     
     # if RunPar.map_choice == "Jansen" or RunPar.Dipole_choice == "Jansen":
@@ -145,11 +189,13 @@ def calc_dipole(P, E, G, AmGroup, rot_mat, FILES, RunPar, WS, Map):
                                 WS.halfbox, WS.boxdims)
         CNvec /= AIM_MF.vec3_len(CNvec)
 
+        ri = WS.positions[Am_C, :] + 0.665*COvec + 0.258*CNvec
+
         if RunPar.replicate_orig_AIM:
             magnitude = 2.73
         else:
             magnitude = 0.276
-        ri = WS.positions[Am_C, :] + 0.665*COvec + 0.258*CNvec
+
         mi = AIM_PF.Dipole_Torii(COvec, CNvec, magnitude)
 
     else:
@@ -194,3 +240,23 @@ def calc_raman(OscGroup, P, E, G, rot_mat, FILES, RunPar, WS, Map):
     Rvec = AIM_MF.tensorprod(RXvec)*20 + AIM_MF.tensorprod(RYvec)*4 + AIM_MF.tensorprod(Zvec)
 
     return Rvec
+
+
+    [  References  ]
+
+@article{TsuboiThomasJr.1997,
+  title = {Raman Scattering Tensors in Biological Molecules and Their Assemblies},
+  author = {Tsuboi, Masamichi and Thomas Jr., George J.},
+  year = {1997},
+  month = aug,
+  journal = {Appl. Spectrosc. Rev.},
+  volume = {32},
+  number = {3},
+  pages = {263--299},
+  issn = {0570-4928, 1520-569X},
+  doi = {10.1080/05704929708003316},
+  url = {http://www.tandfonline.com/doi/abs/10.1080/05704929708003316},
+  urldate = {2022-01-11},
+  langid = {english},
+  AIMnotes = {Raman}
+}

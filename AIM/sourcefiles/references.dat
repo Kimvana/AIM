@@ -1,0 +1,64 @@
+@article{ToriiTasumi1998,
+  title = {Ab Initio Molecular Orbital Study of the Amide I Vibrational Interactions between the Peptide Groups in Di- and Tripeptides and Considerations on the Conformation of the Extended Helix},
+  author = {Torii, Hajime and Tasumi, Mitsuo},
+  year = {1998},
+  journal = {J. Raman. Spectrosc.},
+  volume = {29},
+  pages = {6},
+  doi = {10.1002/(SICI)1097-4555(199801)29:1<81::AID-JRS214>3.0.CO;2-H},
+  #url = {https://analyticalsciencejournals.onlinelibrary.wiley.com/doi/10.1002/(SICI)1097-4555(199801)29:1%3C81::AID-JRS214%3E3.0.CO;2-H},
+  langid = {english},
+  AIMnotes = {DmapTorii CoupTDCTasumi CoupTasumi}
+}
+
+@article{ToriiTasumi1992,
+  title = {Model Calculations on the amide-I Infrared Bands of Globular Proteins},
+  author = {Torii, Hajime and Tasumi, Mitsuo},
+  year = {1992},
+  month = mar,
+  journal = {Chem. Phys.},
+  volume = {96},
+  number = {5},
+  pages = {3379--3387},
+  issn = {0021-9606, 1089-7690},
+  doi = {10.1063/1.461939},
+  url = {http://aip.scitation.org/doi/10.1063/1.461939},
+  urldate = {2022-01-11},
+  langid = {english},
+  AIMnotes = {CoupTDCKrimm}
+}
+
+@article{JansenDijkstra2006,
+  title = {Modeling the Amide I Bands of Small Peptides},
+  author = {Jansen, Thomas la Cour and Dijkstra, Arend G. and Watson, Tim M. and Hirst, Jonathan D. and Knoester, Jasper},
+  year = {2006},
+  month = jul,
+  journal = {Chem. Phys.},
+  volume = {125},
+  number = {4},
+  pages = {044312},
+  issn = {0021-9606, 1089-7690},
+  doi = {10.1063/1.2218516},
+  url = {http://aip.scitation.org/doi/10.1063/1.2218516},
+  urldate = {2021-03-01},
+  langid = {english},
+  AIMnotes = {CoupTCC CoupGLDP}
+}
+
+@article{TsuboiThomasJr.1997,
+  title = {Raman Scattering Tensors in Biological Molecules and Their Assemblies},
+  author = {Tsuboi, Masamichi and Thomas Jr., George J.},
+  year = {1997},
+  month = aug,
+  journal = {Appl. Spectrosc. Rev.},
+  volume = {32},
+  number = {3},
+  pages = {263--299},
+  issn = {0570-4928, 1520-569X},
+  doi = {10.1080/05704929708003316},
+  url = {http://www.tandfonline.com/doi/abs/10.1080/05704929708003316},
+  urldate = {2022-01-11},
+  langid = {english},
+  AIMnotes = {RamanAmide}
+}
+

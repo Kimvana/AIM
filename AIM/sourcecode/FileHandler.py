@@ -15,6 +15,7 @@ import sourcecode.DataConversion as AIM_DC
 import sourcecode.MathFunctions as AIM_MF  # just here for .(c)map support
 import sourcecode.PrintCommands as AIM_PC
 import sourcecode.PhysicsFunctions as AIM_PF  # just here for .(c)map support
+import sourcecode.ReferenceManager as AIM_RM
 import sourcecode.SourceMapreader as AIM_SM
 import sourcecode.SetOperations as AIM_SO  # just here for .(c)map support
 import sourcecode.TimeKeeping as AIM_TK  # just here for .(c)map support
@@ -276,7 +277,7 @@ class FileLocations:
         # Trying to find functioning map files
         tempdict = {}
         for item in [
-            "resnamesfile", "atnamesfile"
+            "referencefile", "resnamesfile", "atnamesfile"
         ]:
             if item not in RawPar.input_parameters:
                 tempdict[item+"filename"] = os.path.join(
@@ -319,6 +320,7 @@ class FileLocations:
         # self.NN_Mapfilename = tempdict["NN_Mapfilename"]
         # self.Tasumi_Mapfilename = tempdict["Tasumi_Mapfilename"]
         # self.TCC_Mapfilename = tempdict["TCC_Mapfilename"]
+        self.referencefilefilename = tempdict["referencefilefilename"]
         self.resnamesfilefilename = tempdict["resnamesfilefilename"]
         self.atnamesfilefilename = tempdict["atnamesfilefilename"]
 
@@ -749,7 +751,8 @@ class FileLocations:
 
         outparfile.write("\n\n\n# Support files location\n")
         templist = [
-            "sourcedir", "resnamesfilefilename", "atnamesfilefilename"]
+            "sourcedir", "referencefilefilename", "resnamesfilefilename",
+            "atnamesfilefilename"]
         if RunPar.use_c_lib:
             templist.append("libfile")
 
@@ -834,6 +837,7 @@ class FileLocations:
         self.AllMaps = AIM_SM.AllSourceMaps(self, RunPar)
         # AllMaps = MapReader_old(self, RunPar)
         # return AllMaps
+        self.OtherRefs = AIM_RM.readreffile(self)
 
     def WriteOutput(self, RunPar, WS):
         if "bin" in RunPar.output_format:  # binary output
@@ -1542,7 +1546,7 @@ class RunParameters:
         self.ExtraMaps_names.append("AmideBB")
 
         if self.replicate_orig_AIM:
-            self.ExtraMaps = ["AmideSC", "AmideBB"]
+            self.ExtraMaps_names = ["AmideSC", "AmideBB"]
 
         (
             self.CouplingMaps, self.Coupling_all_pairs
@@ -2036,6 +2040,8 @@ class ExtraMapReader:
             self.use_G = self.functions["set_use_G"](FILES, RunPar)
             self.relevant_j = self.functions["set_relevant_j"](FILES, RunPar)
             self.relevant_j_arr = np.array(self.relevant_j, dtype='int32')
+            self.references = self.functions["set_references"](
+                self, FILES, RunPar)
 
             # if the inprot wasn't specified correctly in the ID section,
             # just set it to false.
@@ -2094,7 +2100,7 @@ class ExtraMapReader:
 
             linecheck = line.strip().strip("[] ")
             if linecheck in ["Identifiers", "Resname + Atnames", "Emap data",
-                             "Dmap data", "Python Code"]:
+                             "Dmap data", "Python Code", "References"]:
                 if first:
                     section_name = linecheck
                     section_contents = []
@@ -2136,6 +2142,7 @@ class ExtraMapReader:
         self.read_Emapdata(sortedcontents)
         self.read_Dmapdata(sortedcontents)
         self.read_python_code(sortedcontents)
+        self.read_references(sortedcontents)
 
     def read_identifiers(self, sortedcontents):
         datalist = sortedcontents.get("Identifiers", [])
@@ -2218,6 +2225,11 @@ class ExtraMapReader:
             except Exception:
                 pass
 
+    def read_references(self, sortedcontents):
+        datalist = sortedcontents.get("References", [])
+        datastring = "\n".join(datalist)
+        self.rawreferences = AIM_RM.readrefstring(datastring)
+
     def contentchecker(self, FILES, filename, RunPar):
         """
         Checks whether all required information is present. If anything
@@ -2244,6 +2256,7 @@ class ExtraMapReader:
             not hasattr(self, "functions")
             or
             not all(k in self.functions for k in (
+                "set_references",
                 "set_use_G", "set_relevant_j", "local_finder", "pre_calc",
                 "pre_frame", "calc_freq", "calc_dipole"
             ))
@@ -2366,7 +2379,8 @@ class CoupMapReader:
 
             linecheck = line.strip().strip("[] ")
             if linecheck in [
-                "Identifiers", "Coupled OscIDs", "Cmap data", "Python Code"
+                "Identifiers", "Coupled OscIDs", "Cmap data", "Python Code",
+                "References"
             ]:
                 if first:
                     section_name = linecheck
@@ -2407,6 +2421,7 @@ class CoupMapReader:
         self.read_coupled(sortedcontents)
         self.read_Cmapdata(sortedcontents)
         self.read_python_code(sortedcontents)
+        self.read_references(sortedcontents)
 
     def read_identifiers(self, sortedcontents):
         datalist = sortedcontents.get("Identifiers", [])
@@ -2461,6 +2476,11 @@ class CoupMapReader:
 
         self.functions = {}
         exec(codestring, None, self.functions)
+
+    def read_references(self, sortedcontents):
+        datalist = sortedcontents.get("References", [])
+        datastring = "\n".join(datalist)
+        self.references = AIM_RM.readrefstring(datastring)
 
     def contentchecker(self, FILES, filename):
         """
@@ -2695,8 +2715,8 @@ def get_settings_names():
         "atom_based_chainID",
         "use_protein_specials", "Use_AmGroup_selection_criteria", "TreatNN"]
     setnames["settings_names_list_str"] = [
-        "topfile", "trjfile", "sourcedir", "def_parfile", "resnamesfile",
-        "atnamesfile", "libfile",
+        "topfile", "trjfile", "sourcedir", "def_parfile", "referencefile",
+        "resnamesfile", "atnamesfile", "libfile",
         "extramapdir", "outfilename", "outdipfilename",
         "outposfilename", "outparfilename", "outramfilename", "logfilename",
         "proffilename", "pngfilename", "apply_dd_coupling", "map_choice",

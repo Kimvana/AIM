@@ -24,3 +24,21 @@ defmap SC
 0.000000 3071.00 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
 0.000000  0.00000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
+
+defmap Reference
+@article{WangMiddleton2011,
+  title = {Development and Validation of Transferable Amide I Vibrational Frequency Maps for Peptides},
+  author = {Wang, L. and Middleton, C. T. and Zanni, M. T. and Skinner, J. L.},
+  year = {2011},
+  month = apr,
+  journal = {J. Phys. Chem. B},
+  volume = {115},
+  number = {13},
+  pages = {3713--3724},
+  issn = {1520-6106, 1520-5207},
+  doi = {10.1021/jp200745r},
+  url = {https://pubs.acs.org/doi/10.1021/jp200745r},
+  urldate = {2021-03-09},
+  langid = {english},
+  AIMnotes = {EmapGen EmapPro EmapSC}
+}

@@ -24,3 +24,21 @@ defmap SC
 1051 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
 -189 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
+
+defmap Reference
+@article{HamKim2003,
+  title = {Correlation between Electronic and Molecular Structure Distortions and Vibrational Properties. II. Amide I Modes of NMA-nD2O Complexes},
+  author = {Ham, Sihyun and Kim, Joo-Hee and Lee, Hochan and Cho, Minhaeng},
+  year = {2003},
+  month = feb,
+  journal = {Chem. Phys.},
+  volume = {118},
+  number = {8},
+  pages = {3491--3498},
+  issn = {0021-9606, 1089-7690},
+  doi = {10.1063/1.1536980},
+  url = {http://aip.scitation.org/doi/10.1063/1.1536980},
+  urldate = {2022-01-18},
+  langid = {english},
+  AIMnotes = {EmapGen EmapPro EmapSC}
+}

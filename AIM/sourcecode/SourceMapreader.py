@@ -8,6 +8,7 @@ import numpy as np
 import sourcecode.DataConversion as AIM_DC
 import sourcecode.FileHandler as AIM_FH
 import sourcecode.PrintCommands as AIM_PC
+import sourcecode.ReferenceManager as AIM_RM
 
 
 class AllSourceMaps:
@@ -109,6 +110,21 @@ class DE_Map:
                 maps.append(mapitem)
 
         for mapitem in maps:
+            if mapitem.startswith("Reference"):
+                temp = mapitem.split("\n")[1:]
+                temp = "\n".join(temp)
+                self.references = AIM_RM.readrefstring(temp)
+                # temp = temp.split("\n@")
+                # for ref in temp:
+                #     ref = ref.strip()
+                #     if len(ref) > 0:
+                #         refparse = AIM_RM.Reference(ref)
+                #         if refparse.success:
+                #             self.references.append(refparse)
+                #     print(refparse)
+                #     print(str(refparse))
+                #     print("---")
+                continue
             if self.maptype == "E":
                 submap = E_SubMap(mapitem)
             else:

@@ -1,0 +1,21 @@
+# topology and trajectory files, including folder
+
+# lysosome (single linear chain, 129 residues)
+topfile                          sourcefiles/md_0_1.tpr
+trjfile                          sourcefiles/md_0_1_short.xtc
+
+
+# Output file settings
+Verbose                          2
+Verbose_log                      3
+
+
+# Run Parameters
+
+influencers                      All
+oscillators                      AmideBB AmideSC
+map_choice                       Skinner
+Dipole_choice                    Torii
+coupling_choice                  TDCTasumi
+NN_coupling_choice               GLDP
+SphereSize                       20

@@ -42,6 +42,9 @@ defdata magnitude
 
 # Functions required by AIM
 
+def set_references(self, FILES, RunPar):
+    return []
+
 def set_use_G(FILES, RunPar):
     # return whether the map requires gradient info.
     return True
@@ -155,4 +158,4 @@ def calc_dipole(P, E, G, OscGroup, rot_mat, FILES, RunPar, WS, Map):
 
     return mi, ri
 
-# Useful functions for this map
+
