@@ -1,1 +1,32 @@
-x
+
+
+
+Version 1-0-0 pre2:
+
+Updated the pre release to contain the additions/fixes of the last two weeks. This includes the ability to print used references, and some (bug)fixes.
+
+Now, at the end of the calculation, a list of the used references is printed.
+References are saved in a format very similar to .bib files, with the added attribute 'AIMnotes'. This attribute encodes what AIM uses the map for.
+
+changes:
+- a new parameter referencefile is added, to point to the new references.dat
+- a new sourcefile references.dat has been added to store the references to maps that do not have their own files. Also, the coupling references are stored there.
+- added an optional [ References ] header to .(c)map files to store the relevant reference(s).
+- added a required set_references function to .map files. Either users can use it to return the .rawreferences attribute of the corresponding map instance, or they can use it to obtain maps differently (like citing those of core AIM, just like AmideSC does)
+- moved most contents of the fincalc function from the Universe class (WS) to the PrintCommands.py script, and separated it out into smaller functions. These are now called by the fincalc function of the Universe class (WS). Also, a new print function was added for printing references.
+- Added a new sourcecodefile ReferenceManager.py. It stores the new Reference class, and offers a few methods to obtain a list of these references based on an input (either a file or a string)
+- changed SourceMapreader.py's DEmap class - defmap Reference can now store an E- or D-maps reference(s)!
+- added the corresponding references to all Map-E and Map-D files in sourcefiles.
+
+- Updated the manual to reflect recent changes.
+- Updated the azide map to contain a set_references function to avoid constant error messages. Now, you should only get a warning print when using raman functionality.
+- Updated the empty.map_ex file (example map file). It now actually has all section headers and all python functions - they're just empty. When using this template, it's easier not to miss anything.
+- Updated input_parameters_example.txt - some parameters inside were deprecated.
+- Removed old versions of the C code, and compiled a new dylib version
+- removed the custom map. The new E/D map functionality renders it functionally useless.
+- updated resnames.dat to include the NAMD standard chlorine ion CLA.
+- Updated the version test script to include more versions.
+
+bugfix:
+- in FileHandler, replicate_orig_AIM now overwrites the ExtraMaps_names attribute, not ExtraMaps itself.
+- in FileHandler, the hardcoded log and/or out directories are only emptied if they exist.

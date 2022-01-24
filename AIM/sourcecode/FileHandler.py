@@ -50,8 +50,15 @@ class FileLocations:
                         fileloc = os.path.join(directory, filename)
                         os.remove(fileloc)
 
-            CleanUp(self.logdir_hc, nFilesToKeep)
-            CleanUp(self.outdir_hc, nFilesToKeep)
+            try:
+                CleanUp(self.logdir_hc, nFilesToKeep)
+            except Exception:
+                pass
+
+            try:
+                CleanUp(self.outdir_hc, nFilesToKeep)
+            except Exception:
+                pass
 
         def FindExOS(self):
             """
