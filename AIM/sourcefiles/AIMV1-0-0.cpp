@@ -6,7 +6,7 @@
 
 /*extern "C" {
 	__declspec(dllexport) void CalcFieldGrad(float *refpos, int *inrange_ix, float *WS_positions, float *WS_charges, float *halfbox, float *boxdims, int Natoms, float *out);
-	__declspec(dllexport) void CalcField(float *refpos, int *inrange_ix, float *WS_positions, float *WS_charges, float *XYZvec, float *halfbox, float *boxdims, int Natoms, float *out);
+	__declspec(dllexport) void CalcField(float *refpos, int *inrange_ix, float *WS_positions, float *WS_charges, float *halfbox, float *boxdims, int Natoms, float *out);
 	__declspec(dllexport) void group_difference(int *atlist1, int *atlist2, int *lengths);
 	__declspec(dllexport) void res_finder(int *COM_resnums, int COM_resnums_len, int *residues_start, int *residues_fin, float *WS_positions, float *WS_masses, float *WS_res_COM, float *halfbox, float *boxdims);
     __declspec(dllexport) void res_finder_dumb(int *COM_resnums, int COM_resnums_len, int *residues_start, int *residues_fin, float *WS_positions, float *WS_masses, float *WS_res_COM, float *halfbox, float *boxdims);

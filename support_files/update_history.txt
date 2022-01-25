@@ -30,3 +30,4 @@ changes:
 bugfix:
 - in FileHandler, replicate_orig_AIM now overwrites the ExtraMaps_names attribute, not ExtraMaps itself.
 - in FileHandler, the hardcoded log and/or out directories are only emptied if they exist.
+- in AIMV1-0-0.cpp, one of the windows-specific headers has been fixed to correspond to the function, and the call inside AIM.
