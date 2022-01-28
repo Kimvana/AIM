@@ -1069,8 +1069,8 @@ class ParameterFinder:
                     ErrorText = ("The default parameter file cannot be found. "
                                  "Please refer to the manual, as this file is "
                                  "required for calculations. Quitting!")
-                    AIM_PC.warning
-                    (ErrorText, True, 0, FILES.logfilename, FILES)
+                    AIM_PC.warning(
+                        ErrorText, True, 0, FILES.logfilename, FILES)
                 else:
                     self.input_parameters["def_parfilename"] = temp
             else:
