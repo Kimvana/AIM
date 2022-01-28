@@ -1,5 +1,7 @@
+# standard lib imports
 import sys
 
+# my lib imports
 import sourcecode.DataConversion as AIM_DC
 
 
@@ -60,28 +62,7 @@ def warning(
 
     if test == "<module>":
         test = "AIM.py"
-    # elif test == "__init__":
-    #     print("__init__ found!")
-    #     exinf = sys.exc_info()
-    #     print(exinf)
-    #     print(exinf[1].__traceback__)
-    #     tb = exinf[2]
-    #     print(tb)
 
-    #     while True:
-    #         print("---", tb)
-    #         for i in dir(tb):
-    #             print(i, ':', getattr(tb, i))
-    #         tb = tb.tb_next
-    #         if not tb:
-    #             break
-
-    #     quit()
-        # func = types.FunctionType(frame.f_code, frame.f_globals)
-        # print(func)
-        # print(frame)
-        # print(frame.f_code.__class__)
-        # print(func.__self__.__class__.__name__)
     header = headerin + test + extra_header + headerout
 
     if message_text[0] != "\n":
@@ -143,6 +124,12 @@ def finwarning(function_warning, logfilename, RunPar, n=1, extra_header=""):
 
 
 def finprint_composition(FILES, RunPar, WS):
+    """
+    At the end of the calculation, a lot of information is printed to the
+    console. This function manages the prints about the system: how many groups
+    of what type were found in the system?
+    """
+
     nchains = len(WS.fincalcprints["molnum_prot_chains"])
     vprintl(1, [
         "amount of chains: ", nchains,
@@ -196,6 +183,7 @@ def finprint_composition(FILES, RunPar, WS):
         if "AmideBB" in RunPar.oscillators:
             nBBrawall += nBBraw
             nBBall += nBB
+
     # after looking at protein chains, now consider the groups not part of
     # a protein chain
     vprint(2, "Groups outside of protein: ", FILES.logfilename, RunPar)
@@ -245,7 +233,11 @@ def finprint_composition(FILES, RunPar, WS):
 
 
 def finprint_frames(FILES, RunPar, WS):
-    # done with Groups, on to frames
+    """
+    At the end of the calculation, a lot of information is printed to the
+    console. This function manages the prints about the treated frames. How
+    many were available, and how many were actually calculated?
+    """
 
     vprint(1, "\n\nCalculated frames:", FILES.logfilename, RunPar)
     vprint(
@@ -257,7 +249,12 @@ def finprint_frames(FILES, RunPar, WS):
 
 
 def finprint_time(FILES, RunPar, WS, TIMER):
-    # rounding up the calculation times, print how long it took
+    """
+    At the end of the calculation, a lot of information is printed to the
+    console. This function manages the prints about the calculation time:
+    how long did the calculation take?
+    """
+
     vprint(1, "\n\nCalculation time:", FILES.logfilename, RunPar)
     TIMER.Endtime()
     vprintl(1, [
@@ -271,6 +268,13 @@ def finprint_time(FILES, RunPar, WS, TIMER):
 
 
 def finprint_references(FILES, RunPar, WS, totaloftype):
+    """
+    At the end of the calculation, a lot of information is printed to the
+    console. This function manages the prints about the references: which
+    papers should the user reference when they use this calculation for their
+    own work?
+    """
+
     vprint(1, "\n\nRelevant references:", FILES.logfilename, RunPar)
 
     # dict of strings of refs + lists of things using them!

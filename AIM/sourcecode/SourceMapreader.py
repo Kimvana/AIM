@@ -12,7 +12,19 @@ import sourcecode.ReferenceManager as AIM_RM
 
 
 class AllSourceMaps:
+    """
+    Contains all information that can be retrieved from any of the source map
+    files.
+    Each map file is a separate attribute of this class, and another class of
+    itself. In general, one navigates to the array(s) with data using '.'.
+    """
     def __init__(self, FILES, RunPar):
+        """
+        Loops over all files in the sourcefiles directory (as specified in the
+        input parameter file, doesn't have to be the default location). For
+        each file, if it is recognised/read successfully, the information
+        inside is stored in this class.
+        """
 
         function_warning = 0
 
@@ -61,6 +73,9 @@ class AllSourceMaps:
         )
 
     def get_allfuncts(self):
+        """
+        Specifies what functions to use for maps of different types.
+        """
         allfuncts = {
             "C": det_Cmap,
             "D": DE_Map,
@@ -70,6 +85,12 @@ class AllSourceMaps:
 
 
 class DE_Map:
+    """
+    Dipole and frequency maps have the same basis: they have four main
+    attributes. Gen, Pro and SC for the three submaps, and references for the
+    references associated with this map (all that information is stored in
+    the file itself). Other attributes store the name, etc.
+    """
     def __init__(
         self, full_fname, maptypename, FILES, RunPar, function_warning
     ):
@@ -90,6 +111,11 @@ class DE_Map:
         self.printwarns(FILES, RunPar)
 
     def getdata(self):
+        """
+        Reads the file corresponding to this instance. Removes any comments,
+        and splits the rest by 'defmap'. Calls other functions to interpret
+        the data and collects/stores the results.
+        """
         file = open(self.full_fname)
 
         # remove all comments from user (marked with '#', removed by
@@ -114,16 +140,6 @@ class DE_Map:
                 temp = mapitem.split("\n")[1:]
                 temp = "\n".join(temp)
                 self.references = AIM_RM.readrefstring(temp)
-                # temp = temp.split("\n@")
-                # for ref in temp:
-                #     ref = ref.strip()
-                #     if len(ref) > 0:
-                #         refparse = AIM_RM.Reference(ref)
-                #         if refparse.success:
-                #             self.references.append(refparse)
-                #     print(refparse)
-                #     print(str(refparse))
-                #     print("---")
                 continue
             if self.maptype == "E":
                 submap = E_SubMap(mapitem)
@@ -137,6 +153,13 @@ class DE_Map:
                     self.problems.append([submap.mapname, submap.problem])
 
     def printwarns(self, FILES, RunPar):
+        """
+        Checks if all required information has been found. If not, it reports
+        the errors to the user, and passes on to the AllSourceMaps class that
+        this map could not be read successfully, and therefore is not a viable
+        choice. If the user opted to use a different map anyways, a broken map
+        will not hamper the calculation.
+        """
         misstext = "The map is missing."
 
         # An error should be raised if one of the maps is missing
@@ -170,7 +193,17 @@ class DE_Map:
 
 
 class E_SubMap:
+    """
+    DE_Map calls other functions to parse the data in the file. This function
+    takes care of the data inside frequency map files (Map-E_ files). All
+    information belonging to a single sub map (e.g. defmap Gen) is stored as
+    attributes of this class.
+    """
     def __init__(self, mapitem):
+        """
+        Sorts and stores the data. Then calls parse to draw conclusions from
+        the data read.
+        """
 
         # Get a list of lines
         rawmap = [item.strip() for item in mapitem.split("\n")]
@@ -195,6 +228,11 @@ class E_SubMap:
         self.parse()
 
     def parse(self):
+        """
+        Based on the information found in the file, determines what the map
+        needs (For which atoms must the field be calculated, is the gradient
+        required at all?)
+        """
 
         # Find out what atoms are relevant
         PEGabs = np.abs(self.PEG)
@@ -220,7 +258,18 @@ class E_SubMap:
 
 
 class D_SubMap:
+    """
+    DE_Map calls other functions to parse the data in the file. This function
+    takes care of the data inside dipole map files (Map-D_ files). All
+    information belonging to a single sub map (e.g. defmap Gen) is stored as
+    attributes of this class.
+    """
     def __init__(self, mapitem):
+        """
+        Sorts and stores the data. Then calls parse to draw conclusions from
+        the data read.
+        """
+
         self.success = True
         # get a list of lines
         rawmap = [item.strip() for item in mapitem.split("\n")]
@@ -255,6 +304,11 @@ class D_SubMap:
         self.parse()
 
     def parse(self):
+        """
+        Based on the information found in the file, determines what the map
+        needs (For which atoms must the field be calculated, is the gradient
+        required at all?)
+        """
 
         # create containers to store all directions
         temp_rel_j = set()
@@ -295,7 +349,17 @@ class D_SubMap:
 # by det_Cmap, which also returns them to AllSourceMaps
 
 class NN_Map:
+    """
+    This class stores all data from the NN mapfile. As this map (and the
+    corresponding file) have a structure different from all others, it gets
+    its own special class.
+    """
     def __init__(self, full_fname, mapname, FILES, RunPar, function_warning):
+        """
+        Reads the contents of the file, checks whether the file is complete and
+        has the right format. The file may not contain extra lines or comments,
+        but should exactly follow the supplied format.
+        """
         self.full_fname = full_fname
         self.mapname = mapname
         self.function_warning = function_warning
@@ -338,6 +402,9 @@ class NN_Map:
             )
 
     def readmap(self):
+        """
+        Does the actual reading: it retrieves all arrays from the file.
+        """
         rawmapfile = open(self.full_fname)
         for map_num in range(21):  # there are 21 maps - 3 for each situation!
             mapname = rawmapfile.readline().strip()
@@ -350,6 +417,9 @@ class NN_Map:
         rawmapfile.close()
 
     def getdesmaps(self):
+        """
+        Stores the list of 21 map names that the file should contain.
+        """
         destypes = ["Coupling", "NtermShift", "CtermShift"]
         desgroups = [""]
         temp = ["Gly_transPro"] + [i+"Pro_transGly" for i in ["", "D"]]
@@ -360,7 +430,17 @@ class NN_Map:
 
 
 class Tasumi_Map:
+    """
+    This class stores all data from the Tasumi mapfile. As this map (and the
+    corresponding file) have a structure different from all others, it gets
+    its own special class.
+    """
     def __init__(self, full_fname, mapname, FILES, RunPar, function_warning):
+        """
+        Reads the contents of the file, checks whether the file is complete and
+        has the right format. The file may not contain extra lines or comments,
+        but should exactly follow the supplied format.
+        """
         self.full_fname = full_fname
         self.mapname = mapname
         self.function_warning = function_warning
@@ -391,7 +471,17 @@ class Tasumi_Map:
 
 
 class TCC_Map:
+    """
+    This class stores all data from the TCC mapfile. As this map (and the
+    corresponding file) have a structure different from all others, it gets
+    its own special class.
+    """
     def __init__(self, full_fname, mapname, FILES, RunPar, function_warning):
+        """
+        Reads the contents of the file, checks whether the file is complete and
+        has the right format. The file may contain extra lines or comments, as
+        these are filtered out.
+        """
         self.full_fname = full_fname
         self.mapname = mapname
         self.function_warning = function_warning
@@ -421,6 +511,9 @@ class TCC_Map:
             )
 
     def readmap(self):
+        """
+        Does the actual reading: it retrieves all arrays from the file.
+        """
         rawmap = open(self.full_fname)
 
         self.fourPiEps = self.looptildata(rawmap)[0]
@@ -474,6 +567,13 @@ class TCC_Map:
 
 
 class tempcatch:
+    """
+    A temporary class to assist development. If a new type of mapfile is added,
+    this class can be associated with the file. It basically mimicks a failed
+    file - the self.success = False means that the map will be skipped while
+    looping over the files in the directory. To aid this directory loop,
+    the __init__ function takes the same argument as 'real' map classes
+    """
     def __init__(
         self, full_fname, maptypename, FILES, RunPar, function_warning
     ):
@@ -482,12 +582,22 @@ class tempcatch:
 
 
 class EmptyMap:
+    """
+    Similar to tempcatch, a basic empty map to mimick a failed read attempt.
+    This is used by the det_Cmap function to stand in for a coupling map
+    of which the type wasn't recognised.
+    """
     def __init__(self, function_warning):
         self.success = False
         self.function_warning = function_warning
 
 
 class DmapDud:
+    """
+    As the Torii map isn't stored in a file, it is the only map that does not
+    have a class. To avoid errors later on, this empty map is created to stand
+    in.
+    """
     def __init__(self):
         self.Gen = DsubmapDud()
         self.Pro = DsubmapDud()
@@ -495,16 +605,26 @@ class DmapDud:
 
 
 class DsubmapDud:
+    """
+    Assists the DmapDud class. When using the Torii map, this submap indicates
+    that the dipole method does not require AIM to calculate the electric
+    properties of any atom.
+    """
     def __init__(self):
         self.useG = False
         self.relevant_j = []
 
 
 def det_Cmap(full_fname, maptypename, FILES, RunPar, function_warning):
+    """
+    When the AllSourceMaps class detects that a file contains a coupling map,
+    that filename is passed here. This function recognises what type of
+    coupling map the file contains and calls the correct class to deal with
+    the file. It returns the created instance back to AllSourceMaps.
+    """
 
     maptypename = maptypename
     temp = maptypename.split("_")
-    # maptype = temp[0]
     mapname = "_".join(temp[1:])
 
     expected_maps = {
@@ -585,6 +705,14 @@ def read_submap_PEG(maplist):
 # ----------------------
 
 class Needed_Maps:
+    """
+    To make using the maps (especially the E and D maps, of which there can be
+    arbitrarily many) easier, the AllSourceMaps class isn't actually used
+    during calculation. Instead, only the maps that are actually required (that
+    is, all coupling maps, and one frequency and dipole map) are copied into
+    this new class. It is then this class, that is actually used to retrieve
+    data from during calculation.
+    """
     def __init__(self, RunPar, AllMaps):
         self.Emap = getattr(AllMaps, "E_" + RunPar.map_choice)
 

@@ -105,30 +105,6 @@ def calc_freq(P, E, G, OscGroup, FILES, RunPar, WS, Map):
 
     E, G = AIM_MF.EG_rotation(E, G, rot_mat, relevant_j)
 
-    # relevant_j = Map.relevant_j # the atoms for which the fields should be used
-
-    # for j in relevant_j:
-    #     E[j, :] = np.dot(rot_mat, E[j, :])
-        
-    #     Gsq = np.diag(G[j, :3])
-    #     Gsq[np.triu_indices(3, k=1)] = G[j, 3:]
-    #     Gsq[np.tril_indices(3, k=-1)] = G[j, 3:]
-    #     temp = np.matmul(
-    #         np.matmul(rot_mat, Gsq),
-    #         rot_mat.transpose()
-    #     )
-    #     G[j, :3] = np.diag(temp)
-    #     G[j, 3:] = temp[np.triu_indices(3, k=1)]
-
-    # apply the map to the found fields to get the frequency
-    # freq = Map.Emap["omega"][0, 0]
-    # freq += np.sum(np.multiply(E[:3, :], Map.Emap["linear"][:, 1:4]))
-    # freq += np.sum(np.multiply(G[:3, :], Map.Emap["linear"][:, 4:]))
-    # freq += np.sum(np.multiply(
-    #     np.multiply(E[:3, :], E[:3, :]),
-    #     Map.Emap["quadratic"][:, 1:4]
-    # ))
-
     omega = Map.Emap["omega"][0, 0]
     Pmap = Map.Emap["linear"][:, 0]
     Emap = Map.Emap["linear"][:, 1:4]

@@ -59,24 +59,12 @@ def set_references(self, FILES, RunPar):
 
 def set_use_G(FILES, RunPar):
     
-    # if RunPar.map_choice == "Jansen" or RunPar.Dipole_choice == "Jansen":
-    #     return True
-    # else:
-    #     return False
-
     parmap = getattr(FILES.AllMaps, "E_" + RunPar.map_choice)
 
     return parmap.SC.useG
 
 
 def set_relevant_j(FILES, RunPar):
-
-    # if RunPar.map_choice == "Jansen" or RunPar.Dipole_choice == "Jansen":
-    #     return [0, 1, 3, 4]
-    # elif RunPar.map_choice == "Skinner":
-    #     return [0, 3]
-    # else: # tokmakoff!
-    #     return [1]
     
     parmap = getattr(FILES.AllMaps, "E_" + RunPar.map_choice)
     
@@ -144,29 +132,11 @@ def calc_freq(P, E, G, AmGroup, FILES, RunPar, WS, Map):
 
     E, G = AIM_MF.EG_rotation(E, G, rot_mat, relevant_j)
 
-#    for j in relevant_j:
-#        E[j, :] = np.dot(rot_mat, E[j, :])
-#
-#        Gsq = np.diag(G[j, :3])
-#        Gsq[np.triu_indices(3, k=1)] = G[j, 3:]
-#        Gsq[np.tril_indices(3, k=-1)] = G[j, 3:]
-#        temp = np.matmul(
-#            np.matmul(rot_mat, Gsq),
-#            rot_mat.transpose()
-#        )
-#        G[j, :3] = np.diag(temp)
-#        G[j, 3:] = temp[np.triu_indices(3, k=1)]
-
     # Finally, apply the map to the fields to calculate the frequency!
     omega = WS.AllMaps.Emap.SC.omega
     Pmap = WS.AllMaps.Emap.SC.Pmap
     Emap = WS.AllMaps.Emap.SC.Emap
     Gmap = WS.AllMaps.Emap.SC.Gmap
-
-#    freq = omega
-#    freq += np.sum(np.multiply(P, Pmap))
-#    freq += np.sum(np.multiply(E, Emap))
-#    freq += np.sum(np.multiply(G, Gmap))
 
     freq = AIM_MF.apply_map(P, E, G, omega, Pmap, Emap, Gmap, relevant_j)
 
@@ -204,11 +174,6 @@ def calc_dipole(P, E, G, AmGroup, rot_mat, FILES, RunPar, WS, Map):
 
         Emap = WS.AllMaps.Dmap.SC
         for xyz in range(3):
-#            mi_loc[xyz] = Emap[name + "omega"][xyz]
-#            mi_loc[xyz] += np.sum(np.multiply(P, Emap[name + "P"][xyz]))
-#            mi_loc[xyz] += np.sum(np.multiply(E, Emap[name + "E"][xyz]))
-#            mi_loc[xyz] += np.sum(np.multiply(G, Emap[name + "G"][xyz]))
-
             mi_loc[xyz] = AIM_MF.apply_map(
                 P, E, G, Emap.omega[xyz], Emap.Pmap[xyz],
                 Emap.Emap[xyz], Emap.Gmap[xyz],
@@ -221,7 +186,7 @@ def calc_dipole(P, E, G, AmGroup, rot_mat, FILES, RunPar, WS, Map):
 
     return mi, ri
 
-#Raman#
+
 def calc_raman(OscGroup, P, E, G, rot_mat, FILES, RunPar, WS, Map):
     """
     Calculates the Raman tensor of this oscillator.

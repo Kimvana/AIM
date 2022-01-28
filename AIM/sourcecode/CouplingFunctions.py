@@ -113,28 +113,6 @@ def CalcCoupling(FILES, RunPar, WS):
                         OscGroupi, OscGroupj, FILES, RunPar, WS, coupmap))
 
 
-def PrepCoupling_old(FILES, RunPar, WS):  # deprecated
-    if RunPar.coupling_choice == "TCC" or RunPar.NN_coupling_choice == "TCC":
-        Prep_TCC(FILES, RunPar, WS)
-
-    if (RunPar.coupling_choice == "TDCKrimm"
-            or RunPar.NN_coupling_choice == "TDCKrimm"):
-        Prep_TDCKrimm(FILES, RunPar, WS)
-
-    if (RunPar.coupling_choice == "TDCTasumi"
-            or RunPar.NN_coupling_choice == "TDCTasumi"):
-        prepTa = True
-    elif (RunPar.replicate_orig_AIM
-          and RunPar.calculate_SCAmgroups
-          and RunPar.coupling_choice == "TCC"):
-        prepTa = True
-    else:
-        prepTa = False
-
-    if prepTa:
-        Prep_TDCTasumi(FILES, RunPar, WS)
-
-
 # ----
 
 
@@ -332,116 +310,6 @@ def Prep_TDCTasumi_nb(res_desired_len, relevant_groups, AllAmGroups,
 
 
 # ----
-
-
-def CalcCoupling_origAIM(FILES, RunPar, WS):  # deprecated
-    for AmGroupi in range(WS.res_desired_len):
-        CAin = WS.AllAmGroups[AmGroupi, 2]
-        CAic = WS.AllAmGroups[AmGroupi, 14]
-        for AmGroupj in range(AmGroupi):
-            J = 0.0
-            CAj = WS.AllAmGroups[AmGroupj, 8]
-            if CAj == CAin:  # they're NN's!
-                if RunPar.NN_coupling_choice == "TDCKrimm":
-                    J = CalcTDCKr(AmGroupi, AmGroupj, FILES, RunPar, WS)
-                elif RunPar.NN_coupling_choice == "TDCTasumi":
-                    J = CalcTDCTa(AmGroupi, AmGroupj, FILES, RunPar, WS)
-                elif RunPar.NN_coupling_choice == "TCC":
-                    J = CalcTCC(AmGroupi, AmGroupj, FILES, RunPar, WS)
-                elif RunPar.NN_coupling_choice == "Tasumi":
-                    J = CalcTasumi(AmGroupi, AmGroupj, FILES, RunPar, WS)
-                elif RunPar.NN_coupling_choice == "GLDP":
-                    J = CalcGLDP(AmGroupi, AmGroupj, FILES, RunPar, WS)
-            elif CAj == CAic:  # NN, but opposite ends of cyclic chain
-                J = CalcGLDP(AmGroupi, AmGroupj, FILES, RunPar, WS)
-            else:  # they're not NN's
-                if not WS.BBSC[AmGroupi] and not WS.BBSC[AmGroupj]:
-                    if RunPar.coupling_choice == "TDCKrimm":
-                        J = CalcTDCKr(AmGroupi, AmGroupj, FILES, RunPar, WS)
-                    else:
-                        J = CalcTDCTa(AmGroupi, AmGroupj, FILES, RunPar, WS)
-                else:
-                    if RunPar.coupling_choice == "TDCKrimm":
-                        J = CalcTDCKr(AmGroupi, AmGroupj, FILES, RunPar, WS)
-                    elif RunPar.coupling_choice == "TDCTasumi":
-                        J = CalcTDCTa(AmGroupi, AmGroupj, FILES, RunPar, WS)
-                    elif RunPar.coupling_choice == "TCC":
-                        J = CalcTCC(AmGroupi, AmGroupj, FILES, RunPar, WS)
-            WS.Hamiltonian[AmGroupi, AmGroupj] = J
-            WS.Hamiltonian[AmGroupj, AmGroupi] = J
-
-
-def CalcCoupling_older(FILES, RunPar, WS):  # previous version (unused)
-    for AmGroupi in range(WS.res_desired_len):
-        CAin = WS.AllAmGroups[AmGroupi, 2]
-        CAic = WS.AllAmGroups[AmGroupi, 14]
-        for AmGroupj in range(AmGroupi):
-            J = 0.0
-            CAj = WS.AllAmGroups[AmGroupj, 8]
-            if CAj == CAin or CAj == CAic:  # they're NN's!
-                if RunPar.NN_coupling_choice == "TDCKrimm":
-                    J = CalcTDCKr(AmGroupi, AmGroupj, FILES, RunPar, WS)
-                elif RunPar.NN_coupling_choice == "TDCTasumi":
-                    J = CalcTDCTa(AmGroupi, AmGroupj, FILES, RunPar, WS)
-                elif RunPar.NN_coupling_choice == "TCC":
-                    J = CalcTCC(AmGroupi, AmGroupj, FILES, RunPar, WS)
-                elif RunPar.NN_coupling_choice == "Tasumi":
-                    J = CalcTasumi(AmGroupi, AmGroupj, FILES, RunPar, WS)
-                elif RunPar.NN_coupling_choice == "GLDP":
-                    J = CalcGLDP(AmGroupi, AmGroupj, FILES, RunPar, WS)
-            else:
-                if RunPar.coupling_choice == "TDCKrimm":
-                    J = CalcTDCKr(AmGroupi, AmGroupj, FILES, RunPar, WS)
-                elif RunPar.coupling_choice == "TDCTasumi":
-                    J = CalcTDCTa(AmGroupi, AmGroupj, FILES, RunPar, WS)
-                elif RunPar.coupling_choice == "TCC":
-                    J = CalcTCC(AmGroupi, AmGroupj, FILES, RunPar, WS)
-            WS.Hamiltonian[AmGroupi, AmGroupj] = J
-            WS.Hamiltonian[AmGroupj, AmGroupi] = J
-
-
-def CalcCoupling_new(FILES, RunPar, WS):  # test version (unused)
-    NNmeth, nonNNmeth = DetCalcMeth(RunPar)
-
-    for AmGroupi in range(WS.res_desired_len):
-        CAin = WS.AllAmGroups[AmGroupi, 2]
-        CAic = WS.AllAmGroups[AmGroupi, 14]
-        for AmGroupj in range(AmGroupi):
-            J = 0.0
-            CAj = WS.AllAmGroups[AmGroupj, 8]
-            if CAj == CAin or CAj == CAic:  # they're NN's!
-                J = NNmeth(AmGroupi, AmGroupj, FILES, RunPar, WS)
-            else:
-                J = nonNNmeth(AmGroupi, AmGroupj, FILES, RunPar, WS)
-            WS.Hamiltonian[AmGroupi, AmGroupj] = J
-            WS.Hamiltonian[AmGroupj, AmGroupi] = J
-
-
-def CalcCoupling_temp(FILES, RunPar, WS):  # test version (unused)
-    NNmeth, nonNNmeth = DetCalcMeth(RunPar)
-
-    for AmGroupi in range(WS.res_desired_len):
-        for AmGroupj in range(AmGroupi):
-            J = 0.0
-            if WS.NN_array[AmGroupi, AmGroupj]:  # they're NN's!
-                J = NNmeth(AmGroupi, AmGroupj, FILES, RunPar, WS)
-            else:
-                J = nonNNmeth(AmGroupi, AmGroupj, FILES, RunPar, WS)
-            WS.Hamiltonian[AmGroupi, AmGroupj] = J
-            WS.Hamiltonian[AmGroupj, AmGroupi] = J
-
-
-def CalcCoupling_old(FILES, RunPar, WS):  # deprecated
-    NNmeth, nonNNmeth = DetCalcMeth(RunPar)
-
-    for AmGroupi in range(WS.res_desired_len):
-        for AmGroupj in range(AmGroupi):
-            if WS.NN_array[AmGroupi, AmGroupj]:  # they're NN's!
-                WS.Hamiltonian[AmGroupj, AmGroupi] = NNmeth(
-                    AmGroupi, AmGroupj, FILES, RunPar, WS)
-            else:
-                WS.Hamiltonian[AmGroupj, AmGroupi] = nonNNmeth(
-                    AmGroupi, AmGroupj, FILES, RunPar, WS)
 
 
 def CalcGenCoup(OscGroupi, OscGroupj, FILES, RunPar, WS):
@@ -716,28 +584,3 @@ def CalcGLDP(AmGroupi, AmGroupj, FILES, RunPar, WS):
         FILES.logfilename, RunPar, WS)[0]
 
     return J
-
-
-def DetCalcMeth(RunPar):  # deprecated
-    NNmeth = None
-    nonNNmeth = None
-
-    if RunPar.NN_coupling_choice == "TDCKrimm":
-        NNmeth = CalcTDCKr
-    elif RunPar.NN_coupling_choice == "TDCTasumi":
-        NNmeth = CalcTDCTa
-    elif RunPar.NN_coupling_choice == "TCC":
-        NNmeth = CalcTCC
-    elif RunPar.NN_coupling_choice == "Tasumi":
-        NNmeth = CalcTasumi
-    elif RunPar.NN_coupling_choice == "GLDP":
-        NNmeth = CalcGLDP
-
-    if RunPar.coupling_choice == "TDCKrimm":
-        nonNNmeth = CalcTDCKr
-    elif RunPar.coupling_choice == "TDCTasumi":
-        nonNNmeth = CalcTDCTa
-    elif RunPar.coupling_choice == "TCC":
-        nonNNmeth = CalcTCC
-
-    return NNmeth, nonNNmeth

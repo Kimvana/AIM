@@ -41,23 +41,6 @@ class Universe:
         # D map in place)
         self.AllMaps = AIM_SM.Needed_Maps(RunPar, FILES.AllMaps)
 
-        # print(dir(self.AllMaps))
-        # print(dir(self.AllMaps.Emap))
-        # print(self.AllMaps.Emap.Gen.Pmap)
-        # print(self.AllMaps.Emap.Pro.Emap)
-        # print(self.AllMaps.Emap.SC.Gmap)
-        # print(dir(self.AllMaps.Dmap))
-        # print(self.AllMaps.Dmap.Pro.relevant_j_arr)
-        # print(self.AllMaps.Dmap.Gen.omega)
-        # print(self.AllMaps.Dmap.SC.useG)
-        # print(dir(self.AllMaps.NN))
-        # print(self.AllMaps.NN.Coupling)
-        # print(dir(self.AllMaps.Tasumi))
-        # print(self.AllMaps.Tasumi.map)
-        # print(dir(self.AllMaps.TCC))
-        # print(self.AllMaps.TCC.Gen_v)
-        # quit()
-
     def SetProperties(self, FILES, RunPar):
         """
         Creates the arrays storing the properties of all the atoms in the
@@ -76,27 +59,6 @@ class Universe:
 
         self.natoms = np.int32(self.resnums.shape[0])
 
-        # for atomnum in range(0, 100, 1):
-        #     print(
-        #         self.atnums[atomnum],
-        #         self.atnames[atomnum],
-        #         self.resnums[atomnum],
-        #         self.resnames[atomnum],
-        #         self.positions[atomnum],
-        #         self.masses[atomnum],
-        #         self.charges[atomnum],
-        #         self.types[atomnum],
-        #         self.segids[atomnum]
-        #     )
-        # print(self.Universe.dimensions)
-
-        # trj = self.Universe.trajectory
-        # for frame in trj:
-        #     print(self.Universe.dimensions)
-
-        # print(self.Universe.atoms[0].resnum)
-        # quit()
-
         # CHARMM (and others?) resets resnum with each residue
         self.AbsResnums(FILES, RunPar)
         self.nres = np.int32(self.resnums[-1] + 1)
@@ -111,7 +73,6 @@ class Universe:
         # Gromacs has molnums appointed -> dimer protein = mols,
         # every solvent/lipid residue = molnum.
 
-        # gr_molnums = self.Universe.atoms.molnums   # This one!
         if not RunPar.atom_based_chainID:
             try:
                 self.molnums = self.Universe.atoms.molnums
@@ -119,24 +80,6 @@ class Universe:
                 self.FindMolnums(FILES, RunPar)
         else:
             self.FindMolnums_atID(FILES, RunPar)
-
-        # print(np.sum(np.abs(gr_molnums - self.molnums)))   # This one!
-
-        # for atnum in range(self.natoms):
-        #     print(
-        #         self.atnums[atnum],
-        #         self.atnames[atnum],
-        #         self.resnums[atnum],
-        #         self.resnames[atnum],
-        #         self.positions[atnum],
-        #         self.masses[atnum],
-        #         self.charges[atnum],
-        #         self.types[atnum],
-        #         self.segids[atnum],
-        #         self.molnums[atnum],
-        #         gr_molnums[atnum]
-        #     )
-        # quit()   # This one!
 
         self.residues.protein_init(FILES.logfilename, RunPar, self)
 
@@ -201,10 +144,6 @@ class Universe:
         self.molnums = np.zeros(self.atnums.shape, dtype='int32')
 
         u = self.Universe
-        # test_ag = u.atoms[5:20]
-        # print(u.atoms[12])
-        # print(test_ag.atoms[7])
-        # print(test_ag.atoms[12])
 
         prev_resnum = -1
         molnum = -1
@@ -325,11 +264,6 @@ class Universe:
 
             cann_resnum = str(first_at.resnum)
             cann_segid = str(first_at.segid)
-            # print(
-            #     "segid " + cann_segid +
-            #     " and resnum " + cann_resnum +
-            #     " and ( name " + " or name ".join(RunPar.atnames["C"]) + " )"
-            # )
 
             # MDA byres should also work?
             this_residue = u.atoms[
@@ -338,12 +272,6 @@ class Universe:
             Cgr = this_residue.select_atoms(
                 "name " + " or name ".join(RunPar.atnames["C"])
             )
-
-            # Cgr = u.select_atoms(
-            #     "resnum " + cann_resnum +
-            #     " and segid " + cann_segid +
-            #     " and ( name " + " or name ".join(RunPar.atnames["C"]) + " )"
-            # )
 
             # C is an atomgroup!
             if len(Cgr) != 1:
@@ -385,7 +313,6 @@ class Universe:
             # residue
             Cat = Cgr[0]
             C_atnum = Cat.ix
-            # print(Cat)
 
             first_resnum = min(resnums_in_current_molnum)
             first_res = u.atoms[
@@ -398,15 +325,10 @@ class Universe:
             ]
             subgroup = first_res + this_residue + next_res
 
-            # for atom in subgroup:
-            #     print(atom)
-
             Ngr = subgroup.select_atoms(
                 "( name " + " or name ".join(RunPar.atnames["N"]) +
                 " ) and bonded index " + str(C_atnum)
             )
-            # print(Ngr)
-            # quit()
 
             if len(Ngr) > 1:
                 ErrorText = (
@@ -480,13 +402,6 @@ class Universe:
             self.ix.c_ify(self)
             self.out_c = np.ctypeslib.as_ctypes(
                 np.zeros((10), dtype='float32'))
-
-        #    old way of finding Amide groups
-        # self.COfinder(logfilename, RunPar)
-        # self.SystemSize(logfilename, RunPar)
-
-        # creates AllAmGroups array, N/CtermN, BBSC, PrePro
-        # self.ResSelector(RunPar)
 
         if "Ham" in RunPar.output_type:
             self.InitCouplingArrays(RunPar)
@@ -885,324 +800,6 @@ class Universe:
             self.AllOscGroups_c = AIM_DC.ctype2d(self.AllOscGroups, 'int32')
             self.PrePro_c = np.ctypeslib.as_ctypes(self.PrePro)
 
-    # Looks at proteins only. Sees whether they are cyclic, and builds the
-    # initial per-chain arrays of AmGroup relevant atoms
-    def COfinder(self, logfilename, RunPar):  # Deprecated
-        function_warning = 0
-
-        dict_of_BBCOatoms = {}
-        dict_of_SCCOatoms = {}
-        dict_of_cycles = {}
-
-        last_molnum = -1
-        current_molnum = -1
-        protein_molnums = []
-
-        # at least in GROMACS, protein chains each have their own molnum.
-        # Therefore, by looking at molnums, it can be revealed how many chains
-        # are part of the system. If not gromacs, see what WS.molnums actually
-        # returns. Probably, have some check that if molnums doesn't work,
-        # save section(?) (one tier up) as molnums instead (do this where the
-        # WS_molnums is generated)
-        for atomnum in self.ix.protein:
-            last_molnum = current_molnum
-            current_molnum = self.molnums[atomnum]
-            if current_molnum != last_molnum:
-                protein_molnums.append(current_molnum)
-        n_mols = len(protein_molnums)
-        AIM_PC.vprintl(1, ["\nTotal amount of detected chains:", n_mols],
-                       logfilename, RunPar)
-
-        # for every protein chain, see whether it is cyclic. Also, build
-        # arrays containing the atomnumbers of the 6 important atoms of each
-        # amide group
-        for molnum in protein_molnums:
-            molres = []
-            dict_of_cycles[molnum] = True
-
-            # find out which residue numbers are in this molecule
-            for resnum, atnum in enumerate(self.residues.start):
-                if self.molnums[atnum] == molnum:
-                    molres.append(resnum)
-
-            # to find out if this protein chain is cyclic:
-
-            # look at atoms in first residue of molecule
-            for atomnum in range(self.residues.start[molres[0]],
-                                 self.residues.fin[molres[0]]+1):
-                if self.resnames[atomnum] in ["FOR"]:
-                    dict_of_cycles[molnum] = False
-                    break
-                if self.atnames[atomnum] in RunPar.atnames["TermH"]:
-                    dict_of_cycles[molnum] = False
-                    break
-            # look at atoms in last residue of molecule
-            for atomnum in range(self.residues.start[molres[-1]],
-                                 self.residues.fin[molres[-1]]+1):
-                if self.resnames[atomnum] in ["ETA", "GL2"]:
-                    dict_of_cycles[molnum] = False
-                    break
-                if self.atnames[atomnum] in RunPar.atnames["TermO"]:
-                    dict_of_cycles[molnum] = False
-                    break
-            n_res = len(molres)
-
-            # print the findings on whether this protein chain is cyclic
-            if dict_of_cycles[molnum]:
-                AIM_PC.vprintl(1, ["Chain", molnum,
-                                   "is identified as a cyclic chain of", n_res,
-                                   "residues"], logfilename, RunPar)
-            else:
-                AIM_PC.vprintl(1, ["Chain", molnum,
-                                   "is identified as a linear chain of", n_res,
-                                   "residues"], logfilename, RunPar)
-
-            # array is 1 shorter than the amount of residues, unless the chain
-            # is cyclic
-            relevant_atoms = np.empty((n_res-1+dict_of_cycles[molnum], 6),
-                                      dtype='int32')
-
-            AmSCRes = []
-            # to fill the array with atoms
-            for resnum, residue in enumerate(molres):
-                resname = self.residues.resnames[residue]
-                if resname in ["ASN", "GLN"]:
-                    AmSCRes.append(residue)
-
-                for atnum in range(self.residues.start[residue],
-                                   self.residues.fin[residue]+1):
-                    name = self.atnames[atnum]
-
-                    # if it is not the last residue of linear chain
-                    if resnum != n_res-1 or dict_of_cycles[molnum]:
-                        # save the atoms. 0->C_x, 1->O_x, 2->CA_x
-                        if name in RunPar.atnames["C"]:
-                            relevant_atoms[resnum, 0] = atnum
-                        elif name in RunPar.atnames["O"]:
-                            relevant_atoms[resnum, 1] = atnum
-                        elif name in RunPar.atnames["CA"]:
-                            relevant_atoms[resnum, 2] = atnum
-                        elif resname == "FOR":
-                            if name == "H":
-                                relevant_atoms[resnum, 2] = atnum
-
-                    # if the residue is not the first one of the chain:
-                    if resnum != 0 or dict_of_cycles[molnum]:
-                        # save the atoms. 3->N_x+1, 4->H_x+1 (or CD_x+1),
-                        # 5->CA_x+1
-                        if name in RunPar.atnames["N"]:
-                            relevant_atoms[resnum-1, 3] = atnum
-                        elif name in RunPar.atnames["H"]:
-                            relevant_atoms[resnum-1, 4] = atnum
-                        elif name in RunPar.atnames["CA"]:
-                            relevant_atoms[resnum-1, 5] = atnum
-                        elif resname == "ETA":
-                            if name == "C2":
-                                relevant_atoms[resnum-1, 5] = atnum
-                        if resname == "PRO":
-                            if name == "CD":
-                                relevant_atoms[resnum-1, 4] = atnum
-                                if resnum != 0:
-                                    continue
-                                ErrorText = ("warning! first residue of chain "
-                                             + str(molnum) + " is PRO... "
-                                             + "not happened before!!!")
-                                function_warning = AIM_PC.warning(
-                                    ErrorText, False, function_warning,
-                                    logfilename, RunPar)
-
-            dict_of_BBCOatoms[molnum] = relevant_atoms
-
-            n_SCCO = len(AmSCRes)
-            relevant_atoms = np.empty((n_SCCO, 6), dtype='int32')
-            for resnum, residue in enumerate(AmSCRes):
-                ResAts = range(self.residues.start[residue],
-                               self.residues.fin[residue]+1)
-                restype = self.resnames[ResAts[0]]
-                temp = 0
-                if restype == "ASN":
-                    for atomnum in ResAts:
-                        atname = self.atnames[atomnum]
-                        if atname == "CG":
-                            relevant_atoms[resnum, 0] = atomnum
-                            temp += 100000
-                        elif atname == "OD1":
-                            relevant_atoms[resnum, 1] = atomnum
-                            temp += 10000
-                        elif atname == "CB":
-                            relevant_atoms[resnum, 2] = atomnum
-                            temp += 1000
-                        elif atname == "ND2":
-                            relevant_atoms[resnum, 3] = atomnum
-                            temp += 100
-                        elif atname == "HD21":
-                            relevant_atoms[resnum, 4] = atomnum
-                            temp += 10
-                        elif atname == "HD22":
-                            relevant_atoms[resnum, 5] = atomnum
-                            temp += 1
-                elif restype == "GLN":
-                    for atomnum in ResAts:
-                        atname = self.atnames[atomnum]
-                        if atname == "CD":
-                            relevant_atoms[resnum, 0] = atomnum
-                            temp += 100000
-                        elif atname == "OE1":
-                            relevant_atoms[resnum, 1] = atomnum
-                            temp += 10000
-                        elif atname == "CG":
-                            relevant_atoms[resnum, 2] = atomnum
-                            temp += 1000
-                        elif atname == "NE2":
-                            relevant_atoms[resnum, 3] = atomnum
-                            temp += 100
-                        elif atname == "HE21":
-                            relevant_atoms[resnum, 4] = atomnum
-                            temp += 10
-                        elif atname == "HE22":
-                            relevant_atoms[resnum, 5] = atomnum
-                            temp += 1
-
-                if temp != 111111:
-                    ErrorText = (
-                        "From all atoms of residue " + str(residue)
-                        + " the program failed to recognize every atom "
-                        + "belonging to the side-chain amide group. The "
-                        + "following number might aid trouble-shooting "
-                        + "issues: " + str(temp) + ". Quitting!")
-                    function_warning = AIM_PC.warning(
-                        ErrorText, True, function_warning, logfilename, RunPar)
-            dict_of_SCCOatoms[molnum] = relevant_atoms
-
-        AIM_PC.vprint(4, "\nCOfinder completed", logfilename, RunPar)
-        AIM_PC.finwarning(function_warning, logfilename, RunPar)
-
-        self.BackboneAmCO = dict_of_BBCOatoms
-        self.SidechainAmCO = dict_of_SCCOatoms
-        self.cyclic = dict_of_cycles
-
-    def SystemSize(self, logfilename, RunPar):  # Deprecated
-        n_BB_CO_groups = 0
-        for molnum, array in self.BackboneAmCO.items():
-            n_BB_CO_groups += array.shape[0]
-            if not self.cyclic[molnum]:
-                lastres = self.resnums[array[-1, 3]]
-                # although the residue number was allowed according to the
-                # selection, this residue number does not have an amide bond
-                # associated with it -> remove from the desired resnums list.
-                if lastres in self.residues.desired:
-                    self.residues.desired.remove(lastres)
-
-        n_SC_CO_groups = 0
-        for molnum, array in self.SidechainAmCO.items():
-            n_SC_CO_groups += array.shape[0]
-
-        self.res_desired_len = np.int32(
-            len(self.residues.desired) * RunPar.calculate_BBAmgroups
-            + n_SC_CO_groups * RunPar.calculate_SCAmgroups)
-
-        if self.res_desired_len == 0:
-            ErrorText = ("\nSelection criteria are too strict, no residues "
-                         "match the requirements, and therefore, the frequency"
-                         " of none of them should be calculated. Quitting!")
-            AIM_PC.warning(ErrorText, True, 0, logfilename, RunPar)
-
-    def ResSelector(self, RunPar):  # Deprecated
-        # create some storage
-
-        # for each AmGroup, one line with all important atom numbers
-        self.AllAmGroups = np.empty((self.res_desired_len, 18),
-                                    dtype='int32')
-
-        # for each AmGroup, whether it has a C -terminal neighbour
-        self.CtermN = np.empty((self.res_desired_len), dtype=bool)
-
-        # for each AmGroup, whether it has a N -terminal neighbour
-        self.NtermN = np.empty((self.res_desired_len), dtype=bool)
-
-        # for each AmGroup, whether it is backbone or sidechain
-        self.BBSC = np.empty((self.res_desired_len), dtype=bool)
-
-        # for each AmGroup, whether it is a prePro or not
-        self.PrePro = np.empty((self.res_desired_len), dtype='int32')
-
-        counter = 0
-        if RunPar.calculate_BBAmgroups:
-            # loop over all chains in the backbone dict
-            for molnum, array in self.BackboneAmCO.items():
-                Ngroups = array.shape[0]
-                for AmGroup in range(Ngroups):  # for each AmGroup in the chain
-
-                    # for the white/blacklist -> if the residue number is not
-                    # selected, skip it!
-                    resnum = self.resnums[array[AmGroup, 0]]
-                    if resnum not in self.residues.desired:
-                        continue
-                    # The middle 6 entries are for the amide group itself.
-                    self.AllAmGroups[counter, 6:12] = array[AmGroup, :]
-                    self.BBSC[counter] = True  # its in the backbone!
-
-                    # prePro detection - no.9 is the N atom of the AmGroup
-                    # itself
-                    if self.resnames[self.AllAmGroups[counter, 9]] == "PRO":
-                        self.PrePro[counter] = 1
-                    else:
-                        self.PrePro[counter] = 0
-
-                    if AmGroup == 0:
-                        if self.cyclic[molnum]:
-                            # if first residue of cyclic chain -> N-term
-                            # neighbour is last group of same chain
-                            self.NtermN[counter] = True
-                            self.AllAmGroups[counter, 0:6] = array[-1, :]
-                        else:
-                            # if first residue of linear chain -> no N-term
-                            # neighbour
-                            self.NtermN[counter] = False
-                            self.AllAmGroups[counter, 0:6] = 999999999
-                    else:
-                        # if not first residue, there must be a N-term
-                        # neighbour (these are BB only)
-                        self.NtermN[counter] = True
-                        self.AllAmGroups[counter, 0:6] = array[AmGroup-1, :]
-
-                    if AmGroup == Ngroups-1:
-                        if self.cyclic[molnum]:
-                            # if last group of a cyclic chain -> C-term
-                            # neighbour is first group of same chain
-                            self.CtermN[counter] = True
-                            self.AllAmGroups[counter, 12:] = array[0, :]
-                        else:
-                            # if last group of a linear chain -> no C-term
-                            # neighbour
-                            self.CtermN[counter] = False
-                            self.AllAmGroups[counter, 12:] = 999999999
-                    else:
-                        # if not last residue, there must be an C-term
-                        # neighbour
-                        self.CtermN[counter] = True
-                        self.AllAmGroups[counter, 12:] = array[AmGroup+1, :]
-
-                    counter += 1
-        if RunPar.calculate_SCAmgroups:
-            for molnum, array in self.SidechainAmCO.items():
-                Ngroups = array.shape[0]
-
-                # for each sidechain AmGroup on this chain
-                for AmGroup in range(Ngroups):
-                    self.AllAmGroups[counter, 6:12] = array[AmGroup, :]
-                    self.BBSC[counter] = False
-                    self.CtermN[counter] = False
-                    self.AllAmGroups[counter, 0:6] = 999999999
-                    self.NtermN[counter] = False
-                    self.AllAmGroups[counter, 12:] = 999999999
-                    self.PrePro[counter] = 0
-                    counter += 1
-
-        if RunPar.use_c_lib:
-            self.AllAmGroups_c = AIM_DC.ctype2d(self.AllAmGroups, 'int32')
-            self.PrePro_c = np.ctypeslib.as_ctypes(self.PrePro)
-
     def InitCouplingArrays(self, RunPar):
         """
         Creates the np arrays that will store all kinds of information
@@ -1238,11 +835,9 @@ class Universe:
                 self.TDCTa_m_c = AIM_DC.ctype2d(self.TDCTa_m, 'float32')
 
         # for the generic TD coupling between two arbitrary groups
+        # There is no need to initialize a TDCgen_m, as it would just equal
+        # WS.Dipoles. That one is used instead.
         self.TDCgen_r = np.empty((self.res_desired_len, 3))
-
-        # this is not necessary, as currently, TDCgen_m would just equal
-        # WS.Dipoles....
-        # self.TDCgen_m = np.empty((self.res_desired_len, 3))
 
     def RunCalc(self, TIMER, FILES, RunPar):
         """
@@ -1325,10 +920,6 @@ class Universe:
             RunPar.end_frame = len(self.trj)
         self.max_loop = 0
 
-    # generate the array that stores nearest neighbours. A group without
-    # neighbours (end of BB chain, a SC, or non-amide) will give CAin and
-    # CAic == 999999999. CAj will never be that, so they will never satisfy the
-    # CAj == CAin/c requirements!
     def GenCoupTypeArr(self, FILES, RunPar):
         """
         Creates the array that stores what coupling map should be used for any
@@ -1601,13 +1192,6 @@ class Universe:
                 # the x, y and z coordinates of the centre of mass.
 
                 self.Res_COM = AIM_PF.calc_COM("Sel", FILES, RunPar, self)
-                # if RunPar.use_c_lib:
-                # self.Res_COM = AIM_PF.res_finder_c(self, FILES.clib,
-                # self.residues.COM_c, self.residues.COM_len)
-                # else:
-                # self.Res_COM = AIM_PF.res_finder_KvA2(self.residues.COM,
-                # self.nres, self.residues.start, self.residues.fin,
-                # self.positions, self.masses, self.halfbox, self.boxdims)
 
                 all_inrange = np.zeros((self.nres), dtype='int32')
                 # for each AmGroup that we consider:
@@ -1678,7 +1262,8 @@ class Universe:
     def FinishCalc(self, TIMER, FILES, RunPar):
         """
         Takes care of all the prints that are done after the calculation
-        finishes.
+        finishes. Also takes care of finalizing the profiler: its results are
+        stored in a file, and if requested, also converted to a png figure.
         """
         AIM_PC.vprint(
             1, "\n\n====================\nCalculation "
@@ -1720,120 +1305,6 @@ class Universe:
             "\nIf you read this, the program encountered no problems, and "
             "ran normally!\n" + "*"*72, FILES.logfilename, RunPar)
 
-    def FinishCalc_old(self, TIMER, FILES, RunPar):  # deprecated
-        AIM_PC.vprint(1, "\n\n====================\nCalculation "
-                      "Finished!\n====================\n",
-                      FILES.logfilename, RunPar)
-
-        AIM_PC.vprintl(1, [
-            "amount of chains: ", len(self.BackboneAmCO),
-            "\n"], FILES.logfilename, RunPar)
-
-        nBBrawall, nSCrawall, nAMrawall = 0, 0, 0
-        nBBall, nSCall, nAMall = 0, 0, 0
-        counter = 0
-
-        # loop over chains. For each chain, print the amount of amide groups
-        # in it
-        for molnum, array in self.BackboneAmCO.items():
-            nBBraw = array.shape[0]
-            nSCraw = self.SidechainAmCO[molnum].shape[0]
-            nAMraw = nBBraw + nSCraw
-            AIM_PC.vprint(2, "Chain " + str(counter) + ": ",
-                          FILES.logfilename, RunPar)
-            AIM_PC.vprint(3, "Amide groups in backbone: " + str(nBBraw),
-                          FILES.logfilename, RunPar)
-            AIM_PC.vprint(3, "Amide groups in side chain: " + str(nSCraw),
-                          FILES.logfilename, RunPar)
-            AIM_PC.vprint(3, "Total amount of amide groups: " + str(nAMraw)
-                          + "\n", FILES.logfilename, RunPar)
-            nBB = 0
-            if RunPar.calculate_BBAmgroups:
-                for i in range(nBBraw):
-                    if self.resnums[array[i, 0]] in self.residues.desired:
-                        nBB += 1
-            if RunPar.calculate_SCAmgroups:
-                nSC = nSCraw
-            else:
-                nSC = 0
-            nAM = nBB + nSC
-            AIM_PC.vprint(2, "Amide groups in backbone considered: "
-                          + str(nBB), FILES.logfilename, RunPar)
-            AIM_PC.vprint(2, "Amide groups in side chain considered: "
-                          + str(nSC), FILES.logfilename, RunPar)
-            AIM_PC.vprint(2, "Total amount of considered amide groups: "
-                          + str(nAM) + "\n", FILES.logfilename, RunPar)
-            counter += 1
-            # for item in ["nBBraw","nSCraw","nAMraw","nBB","nSC","nAM"]:
-            # locals()[item + "all"] += locals()[item]
-            nBBrawall += nBBraw
-            nSCrawall += nSCraw
-            nAMrawall += nAMraw
-            nBBall += nBB
-            nSCall += nSC
-            nAMall += nAM
-
-        # after summing up all chains, print the total amount of amide groups
-        # in the system
-        AIM_PC.vprint(1, "\nSumming up:", FILES.logfilename, RunPar)
-        AIM_PC.vprint(2, "Amide groups in backbone: " + str(nBBrawall),
-                      FILES.logfilename, RunPar)
-        AIM_PC.vprint(2, "Amide groups in side chain: " + str(nSCrawall),
-                      FILES.logfilename, RunPar)
-        AIM_PC.vprint(2, "Total amount of amide groups: " + str(nAMrawall)
-                      + "\n", FILES.logfilename, RunPar)
-        AIM_PC.vprint(1, "Amide groups in backbone considered: " + str(nBBall),
-                      FILES.logfilename, RunPar)
-        AIM_PC.vprint(1, "Amide groups in side chain considered: "
-                      + str(nSCall), FILES.logfilename, RunPar)
-        AIM_PC.vprint(1, "Total amount of considered amide groups: "
-                      + str(nAMall), FILES.logfilename, RunPar)
-
-        AIM_PC.vprint(1, "\n\nCalculated frames:", FILES.logfilename, RunPar)
-        AIM_PC.vprint(1, "\nAnalyzed frames: " + str(RunPar.start_frame)
-                      + " to " + str(RunPar.end_frame-1), FILES.logfilename,
-                      RunPar)
-        AIM_PC.vprint(1, "Available frames: 0 to " + str(len(self.trj)-1),
-                      FILES.logfilename, RunPar)
-
-        # rounding up the calculation times, print how long it took
-        AIM_PC.vprint(1, "\n\nCalculation time:", FILES.logfilename, RunPar)
-        TIMER.Endtime()
-        AIM_PC.vprintl(1, [
-            "\ninitialization:", round(TIMER.afterinit0, 3),
-            "s\ntime per frame",
-            round((TIMER.totheavy)/(
-                self.lastCalcFrame - RunPar.start_frame + 1), 3),
-            "s\ntotal:", round((TIMER.endtime0), 3), "s =",
-            AIM_DC.timestring(round((TIMER.endtime0), 3))
-        ], FILES.logfilename, RunPar)
-
-        # if the profiler ran, stop it, and export the collected data
-        if RunPar.profiler:
-            FILES.pr.create_stats()
-            FILES.pr.dump_stats(FILES.proffilename)
-
-        # if so desired, make a pretty graph of the runtime
-        if RunPar.pngout:
-            strcommand = [
-                sys.executable,
-                os.path.join(FILES.script_dir, "gprof2dot.py"),
-                "-f", "pstats", FILES.proffilename, "-o",
-                os.path.join(FILES.script_dir, "temp.out")]
-            subprocess.run(strcommand)
-
-            strcommand = [
-                "dot", "-Tpng", "-o", FILES.pngfilename,
-                os.path.join(FILES.script_dir, "temp.out")]
-            subprocess.run(strcommand)
-
-            os.remove(os.path.join(FILES.script_dir, "temp.out"))
-
-        # Aaaaand.... we're done!
-        AIM_PC.vprint(
-            1, "\nIf you read this, the program encountered no problems, and "
-            "ran normally!", FILES.logfilename, RunPar)
-
 
 class ResidueFinder:
     """
@@ -1848,6 +1319,11 @@ class ResidueFinder:
         self.build_srf(WS, RunPar, logfilename)
 
     def protein_init(self, logfilename, RunPar, WS):
+        """
+        Does protein-related identification. For each residue, it is determined
+        whether it is L or D. Also, for each residue, it checks whether the
+        residue should be considered based on the black-/whitelists.
+        """
         self.LD = np.zeros((WS.nres))
         self.desired = []
 
@@ -1883,6 +1359,11 @@ class ResidueFinder:
                 self.desired.append(resnum)
 
     def build_srf(self, WS, RunPar, logfilename):
+        """
+        Create the start, fin, and resname arrays. These arrays have dimension
+        nresiudes, not natoms, to make retrieving the residue properties
+        considerably easier during calculation.
+        """
         self.start = []
         self.resnames = []
         self.fin = []
@@ -1934,6 +1415,10 @@ class ResidueFinder:
         self.report_unknowns(unknowns, logfilename, RunPar)
 
     def report_unknowns(self, unknowns, logfilename, RunPar):
+        """
+        If unknown residues were found (name not in resnames file), report
+        which residue names were unfamiliar.
+        """
         if len(unknowns) != 0:
             ErrorText = ("There are " + str(len(unknowns))
                          + " unknown residue types. The first few are:")
@@ -1948,6 +1433,9 @@ class ResidueFinder:
             quit()
 
     def DLcheck(self, resnum, logfilename, RunPar, WS):
+        """
+        Determines whether a protein residue is in D- or L-configuration.
+        """
         if self.resnames[resnum] in ["GLY", "FOR", "ETA", "GL2"]:
             returnval = 0
         else:
@@ -1993,6 +1481,10 @@ class ResidueFinder:
         return returnval
 
     def COM_init(self, RunPar, WS):
+        """
+        Determines of which groups the COM needs to be calculated (especially
+        relevant if the influencers don't just contain all residues)
+        """
         nGroups = WS.res_desired_len
         Osc_resnums = set()
 
@@ -2005,17 +1497,14 @@ class ResidueFinder:
 
         COM = AIM_SO.union_KvA(self.resnums_influencers, Osc_resnums)
 
-        # if RunPar.ProtInSel:
-        #     COM = self.resnums_influencers
-        # else:
-        #     COM = AIM_SO.union_KvA(
-        #         self.resnums_influencers, self.resnums_protein)
-
         self.resnums_protein = np.array(self.resnums_protein)
         self.resnums_influencers = np.array(self.resnums_influencers)
         self.resnums_COM = np.array(COM)
 
     def c_ify(self, WS):
+        """
+        Convert data in a c-friendly format where needed.
+        """
         self.resnums_COM = self.resnums_COM.astype('int32')
         self.resnums_COM_c = np.ctypeslib.as_ctypes(self.resnums_COM)
         self.resnums_COM_len = np.int32(self.resnums_COM.shape[0])
@@ -2216,8 +1705,6 @@ class IXFinder:
                 if RunPar.map_choice == "Tokmakoff":
                     self.local_tok[AmGroup] = local_ix_tok
 
-            # print(AmGroup, local_ix)
-
 
 class Characterizer:
     """
@@ -2281,11 +1768,9 @@ def gen_universe(FILES, RunPar):
     except TypeError:
         ErrorText = (
             "\nThe given topology/trajectory files are of the wrong type. "
-            "Please remember that only the following combinations are "
-            "currently supported by the program:\n"
-            "           topfile      trjfile \n"
-            "Gromacs |   .tpr         .xtc\n"
-            "Charmm  |   .psf         .dcd\n"
+            "Please remember that only some combinations are "
+            "currently supported by the program. To see which, check the "
+            "manual!\n"
         )
         AIM_PC.warning(ErrorText, True, 0, FILES.logfilename, RunPar)
 

@@ -11,7 +11,7 @@ import numpy as np
 
 # my lib imports
 import sourcecode.CouplingFunctions as AIM_CF  # just here for .(c)map support
-import sourcecode.DataConversion as AIM_DC
+import sourcecode.DataConversion as AIM_DC  # just here for .(c)map support
 import sourcecode.MathFunctions as AIM_MF  # just here for .(c)map support
 import sourcecode.PrintCommands as AIM_PC
 import sourcecode.PhysicsFunctions as AIM_PF  # just here for .(c)map support
@@ -212,7 +212,6 @@ class FileLocations:
         if hasattr(RawPar, "input_parameter_dir"):
             self.input_parameter_dir = RawPar.input_parameter_dir
 
-        # self.Demo_Mode = RawPar.input_parameters.get("Demo_Mode", False)
         self.default_parameter_filename = RawPar.default_parameter_filename
         self.default_parameter_dir = RawPar.default_parameter_dir
 
@@ -236,6 +235,18 @@ class FileLocations:
         delattr(self, "backlog")
 
     def FileFinder(self, RawPar, RunPar):
+        """
+        Called during RunPar creation. Does the following:
+        - Makes sure to store the found file names and locations from RawPar
+          into FILES.
+        - Creates the output hamiltonian, dipole, position and raman files, if
+          those methods are actually requested.
+        - Checks if the reference file, resnames file and atnames files indeed
+          exist at the specified location, then saves these locations.
+        - Checks if trjfile and topfile have been specified. Throws an error
+          when appropriate, or activates demo mode.
+        """
+
         if RunPar.profiler:
             self.pr = cProfile.Profile()
             self.pr.enable()
@@ -319,14 +330,6 @@ class FileLocations:
                     AIM_PC.warning(
                         ErrorText, True, 0, self.logfilename, RunPar)
 
-        # self.Tokmakoff_EMapfilename = tempdict["Tokmakoff_EMapfilename"]
-        # self.Skinner_EMapfilename = tempdict["Skinner_EMapfilename"]
-        # self.Jansen_EMapfilename = tempdict["Jansen_EMapfilename"]
-        # self.Custom_EMapfilename = tempdict["Custom_EMapfilename"]
-        # self.Jansen_DMapfilename = tempdict["Jansen_DMapfilename"]
-        # self.NN_Mapfilename = tempdict["NN_Mapfilename"]
-        # self.Tasumi_Mapfilename = tempdict["Tasumi_Mapfilename"]
-        # self.TCC_Mapfilename = tempdict["TCC_Mapfilename"]
         self.referencefilefilename = tempdict["referencefilefilename"]
         self.resnamesfilefilename = tempdict["resnamesfilefilename"]
         self.atnamesfilefilename = tempdict["atnamesfilefilename"]
@@ -364,7 +367,18 @@ class FileLocations:
             self.Demo_Mode = True
 
     def ClibFinder(self, RawPar, RunPar):
+        """
+        Checks for the c library. If one has been requested, the program is
+        terminated if none could be found. If a specific path has been given,
+        but none could be found there, the program is terminated. If the user
+        didn't give a location and/or preference for use, one is used if found,
+        and the code is run using numba otherwise.
+        """
+
         def TryLoadUnspecCLib(self, RawPar):
+            """
+            Tries to find a functioning c-library if none has been specified.
+            """
             returnval = True
             libfilename = os.path.join(
                 self.sourcedir_def, RawPar.default_parameters["libfile"])
@@ -467,6 +481,11 @@ class FileLocations:
         return success
 
     def InitClib(self):
+        """
+        Initializes the c-library. Similar to c itself, the python end of this
+        external library has to be defined: the amount and type of arguments.
+        So: all functions referenced in here are defined in the .cpp script.
+        """
 
         # CalcFieldGrad
         self.clib.CalcFieldGrad.argtypes = [
@@ -588,6 +607,9 @@ class FileLocations:
         self.clib.CalcGenCoup.restype = ct.c_float
 
     def WriteParToLog(self, RunPar):
+        """
+        Writes the choice of parameters into the log file.
+        """
         logfile = open(self.logfilename, "a")
 
         logfile.write(
@@ -751,6 +773,9 @@ class FileLocations:
         logfile.close()
 
     def WriteParToOutPar(self, RunPar):
+        """
+        Writes the output parameters file.
+        """
         outparfile = open(self.outparfilename, "w")
 
         outparfile.write("# topology and trajectory files, including folder\n")
@@ -827,6 +852,21 @@ class FileLocations:
         outparfile.close()
 
     def InitProgram(self, RunPar):
+        """
+        Initializes the program by creating an instance of the AIM_UM.Universe
+        class. During this step, the following happens:
+        - creation of the MDA universe (attribute of the AIM universe)
+        - check of the shape of the periodic bounding box of the system
+        - retrieval of all properties from the MDA universe (atomic positions,
+          names, charges, etc)
+        - deduction of further info (molnums, creation of residue-based
+          property arrays)
+        - converting the arrays needed in c in the future into a c-readable
+          format
+        - check if the charge of the entire system is a sensible value
+        - retrieval of the required maps for the rest of the calculation
+        """
+
         if RunPar.profiler:
             AIM_PC.vprint(
                 2, "\n\nThis run is being profiled! This slows down the "
@@ -841,12 +881,17 @@ class FileLocations:
         return WS
 
     def ReadMaps(self, RunPar):
+        """
+        Reads source map files (not extra maps) and the reference file.
+        """
         self.AllMaps = AIM_SM.AllSourceMaps(self, RunPar)
-        # AllMaps = MapReader_old(self, RunPar)
-        # return AllMaps
-        self.OtherRefs = AIM_RM.readreffile(self)
+        self.OtherRefs = AIM_RM.readreffile(self.referencefilefilename)
 
     def WriteOutput(self, RunPar, WS):
+        """
+        Writes the output of the calculation (into the hamiltonian, dipole,
+        position and raman files)
+        """
         if "bin" in RunPar.output_format:  # binary output
             framenum_arr = np.array([WS.framenum], dtype='float32')
 
@@ -999,12 +1044,17 @@ class ParameterFinder:
             self.input_parameters_str, self.unrecognised_parameters = {}, []
 
     def ReadDefaults(self, FILES):
+        """
+        Finds the default parameters file and reads its contents. If a specific
+        location was specified in the input parameter file, it checks there.
+        Otherwise, it uses the default name/location.
+        """
         # for finding the default parameter file. If a name was specified in
         # input file, use that. Use hard-coded default otherwise.
         if "def_parfile" not in self.input_parameters:
+
             # no need to check whether sourcedir exists, its already within a
             # try anyways.
-
             try:
                 temp = os.path.join(
                     self.input_parameter_dir,
@@ -1064,7 +1114,10 @@ class ParameterFinder:
             )[0]
 
     def CheckDefaults(self, FILES):
-        # check if the default parameter file is complete
+        """
+        Checks if the default parameter file is complete.
+        """
+
         SetNames = get_settings_names()
         all_settings = (
             SetNames["settings_names_list_all"] + self.more_def_setnames
@@ -1085,9 +1138,13 @@ class ParameterFinder:
                 AIM_PC.warning(ErrorText, True, 0, FILES.logfilename, FILES)
 
     def Locationcheck(self, FILES):
-        # These are no longer expected in default_parameters, as the user
-        # must give them in the input_parameters file. If not, they should
-        # default to the folder from which the program is run.
+        """
+        This function checks whether all requested folders exist. The default
+        for the out and log folders is taken to be the location from which AIM
+        was called. They may, just like the sourcedir and extramapdir, also
+        be specified in the input parameter file.
+        """
+
         for item in ["outdir", "logdir"]:
             self.default_parameters[item] = FILES.curr_work_dir
 
@@ -1116,6 +1173,14 @@ class ParameterFinder:
             self.input_parameters["logdir"], temp)
 
     def WriteRawInputToLog(self, FILES):
+        """
+        Writes the raw, unprocessed contents of the input parameter file to the
+        log file. If parameters are missing, the missing ones are not printed.
+        If clashes between choices exist, they are not resolved. This is
+        intended so the user can see how the program sees the input file (as
+        commented-out lines etc are removed)
+        """
+
         # start writing the log file
         try:
             logfile = open(FILES.logfilename, "a")
@@ -1131,6 +1196,14 @@ class ParameterFinder:
         logfile.close()
 
     def ParameterCheck(self, FILES):
+        """
+        Checks whether the input parameter file was complete. If not, it
+        appends the missing items using the default parameter file. For most
+        parameters, this is fine, as they are quite specific. A few, however,
+        are important for virtually every calculation. If those are missing,
+        a remark is printed, warning the user, and urging them to check the
+        used choices.
+        """
         logfile = open(FILES.logfilename, "a")
         function_warning = 0
         logfile.write(
@@ -1159,7 +1232,7 @@ class ParameterFinder:
                     "\n" + parname + self.input_parameters_str[parname])
 
         # The code can run without a specified setting for these parameters
-        # without any issues. #Raman#
+        # without any issues.
         for item in [
             "outfilename", "outdipfilename", "outramfilename",
             "outposfilename",
@@ -1205,6 +1278,13 @@ class RunParameters:
     possible contradictions between parameters.
     """
     def __init__(self, RawPar, FILES):
+        """
+        Manages the entire creation of the class. After this function has
+        completed, the entire RunPar class is ready to use. Apart from fixing
+        any possible clashes between parameters, it also deals with all maps.
+        The source maps are read from here, just as the extra maps are. All
+        read maps are validated.
+        """
         # migrate settings into RunPar
         self.InitRunSet(RawPar, FILES)
         # check if all specified files exist
@@ -1243,6 +1323,10 @@ class RunParameters:
         self.ValidateExtraMaps(FILES)
 
     def InitRunSet(self, RawPar, FILES):
+        """
+        Takes care of the 'simple' parameters: for these, just copy the choice
+        in RawPar. Does not worry about possible clashes.
+        """
 
         self.output_format = RawPar.input_parameters["output_format"]
         self.output_type = RawPar.input_parameters["output_type"]
@@ -1290,6 +1374,13 @@ class RunParameters:
         self.ang2bohr = 1/self.bohr2ang
 
     def InitBWlist(self, RawPar, logfilename):
+        """
+        Takes care of the black-/whitelist parameters. If some black-/whitelist
+        is given, but the user also indicates not to use any of these filters,
+        they are ignored. If the user doesn't indicate whether they should be
+        used, they are only used when present.
+        """
+
         logfile = open(logfilename, "a")
 
         # if Use_AmGr_sel_crit is not present in input file, but some BWlist
@@ -1370,6 +1461,13 @@ class RunParameters:
         logfile.close()
 
     def InitFrames(self, RawPar, logfilename):
+        """
+        Takes care of the selected frame numbers. As the frames to calculate
+        can be specified in three ways (start, end and nFrames), but two are
+        enough to specify things precisely, this deals with filling in any
+        missing ones, or reporting when all three are given, but don't agree.
+        """
+
         # dealing with which frames to calculate
         temp = 0
         templist = [True, True, True]
@@ -1426,6 +1524,13 @@ class RunParameters:
             self.nFrames_to_calculate = self.end_frame - self.start_frame
 
     def InitNSA(self, RawPar, logfilename):
+        """
+        Takes care of the NSA parameter. If the user requested NSA, they are
+        also expected to provide the NSA settings: these are not taken from
+        default as they are too system-dependent, and the user should be sure
+        of their choices.
+        """
+
         self.NSA_toggle = RawPar.input_parameters["NSA_toggle"]
         if self.NSA_toggle:
             for item in ["NSA_spheresize", "NSA_nframes"]:
@@ -1450,23 +1555,11 @@ class RunParameters:
                 self.NSA_spheresize_c = np.float32(self.NSA_spheresize)
 
     def FixContradictions(self, logfilename, FILES):
-        # # not useful to run if no output is requested
-        # if not self.output_bin and not self.output_txt:
-        #     ErrorText = (
-        #         "\nContradicting input parameters: according to these, "
-        #         "neither binary nor text output files should be created.
-        # With "
-        #         "no output, there is no need to run! Quitting!")
-        #     AIM_PC.warning(ErrorText, True, 0, logfilename, self)
-        # if not self.output_Ham and not self.output_Dip and not
-        # self.output_Pos:
-        #     ErrorText = (
-        #         "\nContradicting input parameters: according to these, "
-        #         "neither hamiltonian nor dipole or position output files "
-        #         "should be created. With no output, there is no need to
-        # run! "
-        #         "Quitting!")
-        #     AIM_PC.warning(ErrorText, True, 0, logfilename, self)
+        """
+        Deals with any contradictions that may arise. Some parameters cannot
+        be used together. If two clashing settings are requested, one is
+        changed, and the user notified.
+        """
 
         # as MDA has faulty COM's, it makes little/no sense to still do the
         # NSA optimization (use_c_lib does work)
@@ -1547,6 +1640,10 @@ class RunParameters:
                 AIM_PC.warning(ErrorText, True, 0, logfilename, self)
 
     def ReadExtraMaps(self, FILES):
+        """
+        Deals with reading the user-defined extramaps.
+        """
+
         # the map needs access to proper parameters.
         self.ExtraMaps = extra_map_reader(FILES, self)
         self.ExtraMaps_names = [v.name for v in self.ExtraMaps.values()]
@@ -1561,7 +1658,8 @@ class RunParameters:
 
     def ValidateMaps(self, FILES):
         """
-        Validates the parameters map_choice and Dipole_choice
+        Validates the parameters map_choice and Dipole_choice, knowing what
+        choices are available.
         """
 
         av_Emaps = FILES.AllMaps.available_Emaps
@@ -1603,6 +1701,11 @@ class RunParameters:
                 AIM_PC.warning(ErrorText, True, 0, FILES.logfilename, self)
 
     def finish_init(self, FILES):
+        """
+        Finishes the initialization: the resnamesfile and atnamesfile are read,
+        and the max_time parameter is converted from the more user/input
+        friendly minutes to the more useful (in code) seconds.
+        """
         # max_time is requested in minutes, but used internally in seconds.
         self.max_time *= 60
 
@@ -1721,294 +1824,10 @@ class RunParameters:
             self.atnames[line[0]] = line[1:]
 
     def SetOPLS(self, value):
+        """
+        For setting the opls attribute.
+        """
         self.opls = value
-
-
-class MapReader_old:  # deprecated
-    """
-    The class for reading built-in AIM maps (those in the sourcefiles
-    directory).
-    """
-    def __init__(self, FILES, RunPar):
-        self.EmapReader(FILES, RunPar)
-        if RunPar.Dipole_choice == "Jansen":
-            self.DmapReader(FILES, RunPar)
-        else:
-            self.Emap["Gen_Mu1_useG"] = False
-            self.Emap["Pro_Mu1_useG"] = False
-        self.NNmapReader(FILES.NN_Mapfilename)
-        self.CouplingMapReader(
-            FILES.TCC_Mapfilename, FILES.Tasumi_Mapfilename, RunPar)
-
-        # self.OtherMapReader(FILES)
-
-    def EmapReader(self, FILES, RunPar):
-        function_warning = 0
-
-        if RunPar.map_choice == "Tokmakoff":
-            mapfilename = FILES.Tokmakoff_EMapfilename
-        elif RunPar.map_choice == "Skinner":
-            mapfilename = FILES.Skinner_EMapfilename
-        elif RunPar.map_choice == "Jansen":
-            mapfilename = FILES.Jansen_EMapfilename
-        elif RunPar.map_choice == "Custom":
-            mapfilename = FILES.Custom_EMapfilename
-
-        EmapRaw, mapnames = self.EmapReader_unit(FILES, RunPar, mapfilename, 7)
-
-        for mapname in ["Gen", "Pro", "SC"]:
-            if mapname not in mapnames:
-                ErrorText = (
-                    "User opted for the " + RunPar.map_choice
-                    + " map, saved as the file " + mapfilename
-                    + "\nThe mapfile is missing a map of the name "
-                    + mapname + ". Quitting!")
-                AIM_PC.warning(
-                    ErrorText, True, function_warning,
-                    FILES.logfilename, RunPar)
-
-        self.Emap = {}
-
-        for mapname in mapnames:
-            PEG = np.array(EmapRaw[mapname + "_PEG0"])
-            PEGabs = abs(PEG)
-            relevant_j = []
-            for i in range(6):
-                if np.amax(PEGabs[i, :]) > 0:
-                    relevant_j.append(i)
-
-            self.Emap[mapname+"_omega"] = EmapRaw[mapname+"_omega0"]
-            self.Emap[mapname+"_P"] = PEG[:, 0]
-            self.Emap[mapname+"_E"] = PEG[:, 1:4]
-            self.Emap[mapname+"_G"] = PEG[:, 4:]
-
-            self.Emap[mapname+"_relevant_j"] = relevant_j
-            self.Emap[mapname+"_relevant_j_arr"] = np.array(
-                relevant_j, dtype='int32')
-
-            Gabs = abs(PEG[:, 4:])
-            if np.amax(Gabs) > 0:
-                self.Emap[mapname+"_useG"] = True
-            else:
-                self.Emap[mapname+"_useG"] = False
-
-            if len(relevant_j) == 0:
-                ErrorText = (
-                    "User opted for the " + RunPar.map_choice
-                    + " map, saved as the file " + mapfilename
-                    + "\nThe mapfile contains nothing but zeros, which is a "
-                    "problem. Please supply a map with more data. Quitting!")
-                AIM_PC.warning(
-                    ErrorText, True, function_warning,
-                    FILES.logfilename, RunPar)
-
-    def EmapReader_unit(self, FILES, RunPar, mapfilename, linespermap):
-        function_warning = 0
-        mapfile = open(mapfilename)
-
-        linecounter = 0
-        EmapRaw = {}
-        mapname = ""
-        mapnames = []
-        for line in mapfile:
-            line = LineFormat(line)
-            if len(line) == 0:
-                continue
-            elif line[0] == "defmap":
-                if len(line) == 1:
-                    ErrorText = (
-                        "User opted for the " + RunPar.map_choice
-                        + " map, saved as the file " + mapfilename
-                        + "\nThe keyword 'defmap' (indicating a new map) was "
-                        "detected, but it was not followed by a name this map "
-                        "should have! \nQuitting!")
-                    AIM_PC.warning(
-                        ErrorText, True, function_warning,
-                        FILES.logfilename, RunPar)
-
-                if linecounter != 0:
-                    ErrorText = (
-                        "User opted for the " + RunPar.map_choice
-                        + " map, saved as the file " + mapfilename
-                        + "\nA new map of the name " + line[1]
-                        + " was declared, but the previous map is still "
-                        "missing data! Quitting!")
-                    AIM_PC.warning(
-                        ErrorText, True, function_warning,
-                        FILES.logfilename, RunPar)
-
-                linecounter = linespermap
-                mapname = line[1]
-            elif linecounter != 0 and linecounter % 7 == 0:
-                linect = str((linecounter//7)-1)
-                try:
-                    omega = float(line[0])
-                except Exception:
-                    ErrorText = (
-                        "User opted for the " + RunPar.map_choice
-                        + " map, saved as the file " + mapfilename
-                        + "\nThe value for omega for the " + line[1]
-                        + " map was not recognised as a number.  Quitting!")
-                    AIM_PC.warning(
-                        ErrorText, True, function_warning,
-                        FILES.logfilename, RunPar)
-                EmapRaw[mapname+"_omega"+linect] = omega
-                EmapRaw[mapname+"_PEG"+linect] = []
-                linecounter -= 1
-            elif linecounter % 7 != 0:
-                linect = str(linecounter//7)
-                if len(line) != 10:
-                    ErrorText = (
-                        "User opted for the " + RunPar.map_choice
-                        + " map, saved as the file " + mapfilename
-                        + "\nThe values for P, E and G for the " + line[1]
-                        + " map do not match the required format. Please "
-                        "supply 10 numbers in total, separated by spaces. "
-                        "Quitting!")
-                    AIM_PC.warning(
-                        ErrorText, True, function_warning,
-                        FILES.logfilename, RunPar)
-                newline = []
-                try:
-                    for item in line:
-                        newline.append(float(item))
-                except Exception:
-                    ErrorText = (
-                        "User opted for the " + RunPar.map_choice
-                        + " map, saved as the file " + mapfilename
-                        + "\nThe values for P, E and G for the " + line[1]
-                        + " aren't all numbers. Please specify numbers only. "
-                        "Quitting!")
-                    AIM_PC.warning(
-                        ErrorText, True, function_warning,
-                        FILES.logfilename, RunPar)
-                EmapRaw[mapname+"_PEG"+linect].append(newline)
-
-                if linecounter == 1:
-                    mapnames.append(mapname)
-                    mapname == ""
-
-                linecounter -= 1
-
-        mapfile.close()
-        return EmapRaw, mapnames
-
-    def DmapReader(self, FILES, RunPar):
-        function_warning = 0
-
-        mapfilename = FILES.Jansen_DMapfilename
-        EmapRaw, mapnames = self.EmapReader_unit(
-            FILES, RunPar, mapfilename, 21)
-
-        for mapname in ["Gen_Mu1", "Pro_Mu1", "SC_Mu1"]:
-            if mapname not in mapnames:
-                ErrorText = (
-                    "The dipole mapfile is missing a map of the name "
-                    + mapname + ". Quitting!")
-                AIM_PC.warning(
-                    ErrorText, True, function_warning,
-                    FILES.logfilename, RunPar)
-
-        for mapname in mapnames:
-            self.Emap[mapname+"_omega"] = []
-            self.Emap[mapname+"_P"] = []
-            self.Emap[mapname+"_E"] = []
-            self.Emap[mapname+"_G"] = []
-            useG = []
-            for mudir in range(2, -1, -1):
-                mudirs = str(mudir)
-                PEG = np.array(EmapRaw[mapname+"_PEG"+mudirs])
-
-                self.Emap[mapname+"_omega"].append(
-                    EmapRaw[mapname+"_omega"+mudirs])
-                self.Emap[mapname+"_P"].append(PEG[:, 0])
-                self.Emap[mapname+"_E"].append(PEG[:, 1:4])
-                self.Emap[mapname+"_G"].append(PEG[:, 4:])
-
-                Gabs = abs(PEG[:, 4:])
-                if np.amax(Gabs) > 0:
-                    useG.append(True)
-                else:
-                    useG.append(False)
-
-            if sum(useG) > 0:
-                self.Emap[mapname+"_useG"] = True
-            else:
-                self.Emap[mapname+"_useG"] = False
-
-        for mapname in ["Gen", "Pro", "SC"]:
-            relevant_j = []
-            for j in range(6):
-                for P_E_G in ["P", "E", "G"]:
-                    for direc in range(3):
-                        name = mapname + "_Mu1_" + P_E_G
-                        if P_E_G == "P":
-                            maxval = np.amax(self.Emap[name][direc][j])
-                        else:
-                            maxval = np.amax(self.Emap[name][direc][j, :])
-                        if maxval > 0 and j not in relevant_j:
-                            relevant_j.append(j)
-
-            # for j in self.Emap[mapname+"_relevant_j"]:
-            #     if j not in relevant_j:
-            #         relevant_j.append(j)
-            relevant_j.sort()
-            self.Emap[mapname+"_relevant_j_dipole"] = relevant_j
-            self.Emap[mapname+"_Mu1_relevant_j_dipole_arr"] = np.array(
-                relevant_j, dtype='int32')
-
-    def NNmapReader(self, NN_Mapfilename):
-        rawmapfile = open(NN_Mapfilename)
-        self.NNmaps = {}
-        for map_num in range(21):  # there are 21 maps - 3 for each situation!
-            mapname = rawmapfile.readline().strip()
-            for _ in range(13):
-                _ = rawmapfile.readline()
-            mapdata = np.genfromtxt(
-                NN_Mapfilename, skip_header=map_num*14 + 1, max_rows=13)
-            self.NNmaps[mapname] = mapdata
-
-    def CouplingMapReader(self, TCC_Mapfilename, Tasumi_Mapfilename, RunPar):
-        if (RunPar.coupling_choice == "TCC"
-                or RunPar.NN_coupling_choice == "TCC"):
-            rawmapfile = open(TCC_Mapfilename)
-            temp = rawmapfile.readline().strip()
-            self.TCC_4PiEps = float(temp)
-            temp = rawmapfile.readline().strip().split()
-            self.TCC_Gen_alpha = float(temp[0])
-            self.TCC_Pro_alpha = float(temp[1])
-
-            self.TCC_Gen_q = np.genfromtxt(
-                TCC_Mapfilename, skip_header=2, max_rows=1)
-            self.TCC_Pro_q = np.genfromtxt(
-                TCC_Mapfilename, skip_header=3, max_rows=1)
-            self.TCC_Gen_dq = np.genfromtxt(
-                TCC_Mapfilename, skip_header=4, max_rows=1)
-            self.TCC_Pro_dq = np.genfromtxt(
-                TCC_Mapfilename, skip_header=5, max_rows=1)
-            self.TCC_Gen_v = np.genfromtxt(
-                TCC_Mapfilename, skip_header=7, max_rows=6)
-            self.TCC_Pro_v = np.genfromtxt(
-                TCC_Mapfilename, skip_header=14, max_rows=6)
-
-            if RunPar.use_c_lib:
-                # datatype management! save all data as c-friendly!
-                self.TCC_4PiEps = np.float32(self.TCC_4PiEps)
-                self.TCC_Gen_alpha = np.float32(self.TCC_Gen_alpha)
-                self.TCC_Pro_alpha = np.float32(self.TCC_Pro_alpha)
-                self.TCC_Gen_q = self.TCC_Gen_q.astype('float32')
-                self.TCC_Gen_q_c = np.ctypeslib.as_ctypes(self.TCC_Gen_q)
-                self.TCC_Pro_q = self.TCC_Pro_q.astype('float32')
-                self.TCC_Pro_q_c = np.ctypeslib.as_ctypes(self.TCC_Pro_q)
-                self.TCC_Gen_dq = self.TCC_Gen_dq.astype('float32')
-                self.TCC_Gen_dq_c = np.ctypeslib.as_ctypes(self.TCC_Gen_dq)
-                self.TCC_Pro_dq = self.TCC_Pro_dq.astype('float32')
-                self.TCC_Pro_dq_c = np.ctypeslib.as_ctypes(self.TCC_Pro_dq)
-                self.TCC_Gen_v_c = AIM_DC.ctype2d(self.TCC_Gen_v, 'float32')
-                self.TCC_Pro_v_c = AIM_DC.ctype2d(self.TCC_Pro_v, 'float32')
-
-        if RunPar.NN_coupling_choice == "Tasumi":
-            self.Tasumi_Map = np.genfromtxt(Tasumi_Mapfilename, max_rows=13)
 
 
 class ExtraMapReader:
@@ -2028,7 +1847,6 @@ class ExtraMapReader:
         successfully, is the map actually added to the directory of extramaps.
         """
         self.filename = filename
-        # self.extra_header = " for file " + os.path.basename(self.filename)
         self.extra_header = " of class ExtraMapReader"
         self.function_warning = 0
         rawfilecontents = self.opener(filename, FILES)
@@ -2099,9 +1917,6 @@ class ExtraMapReader:
             # simple line formatting to ignore code after # (just like python)
             line = line.rstrip()
             line = line.split('#')[0]
-            # hashpos = line.find("#")
-            # if hashpos != -1:
-            #     line = line[:hashpos]
             if len(line) == 0:
                 continue
 
@@ -2152,6 +1967,9 @@ class ExtraMapReader:
         self.read_references(sortedcontents)
 
     def read_identifiers(self, sortedcontents):
+        """
+        Reads/interprets the information under the 'identifiers' header
+        """
         datalist = sortedcontents.get("Identifiers", [])
         for line in datalist:
             line = line.split()
@@ -2174,6 +1992,9 @@ class ExtraMapReader:
                     self.inprot = False
 
     def read_makeup(self, sortedcontents):
+        """
+        Reads/interprets the information under the 'resname + atnames' header
+        """
         datalist = sortedcontents.get("Resname + Atnames", [])
         self.makeup = {}
         for line in datalist:
@@ -2195,6 +2016,9 @@ class ExtraMapReader:
                     self.makeup[resname] = [atnames]
 
     def read_python_code(self, sortedcontents):
+        """
+        Reads/interprets the information under the 'python code' header
+        """
         datalist = sortedcontents.get("Python Code", [])
         codestring = "\n".join(datalist)
 
@@ -2204,13 +2028,11 @@ class ExtraMapReader:
             exec(codestring, None, self.functions)
         except Exception:
             self.exec_error = traceback.format_exc()
-            # ErrorText = (
-            #     "\n This occured while trying to read the code in the file "
-            #     + self.filename)
-            # print(dir(E))
-            # raise type(E)(E.msg + ErrorText)
 
     def read_Emapdata(self, sortedcontents):
+        """
+        Reads/interprets the information under the 'emap data' header
+        """
         datalist = sortedcontents.get("Emap data", [])
         temp_Emap = read_map_data(datalist)
 
@@ -2222,6 +2044,9 @@ class ExtraMapReader:
                 pass
 
     def read_Dmapdata(self, sortedcontents):
+        """
+        Reads/interprets the information under the 'dmap data' header
+        """
         datalist = sortedcontents.get("Dmap data", [])
         temp_Dmap = read_map_data(datalist)
 
@@ -2233,6 +2058,9 @@ class ExtraMapReader:
                 pass
 
     def read_references(self, sortedcontents):
+        """
+        Reads/interprets the information under the 'references' header.
+        """
         datalist = sortedcontents.get("References", [])
         datastring = "\n".join(datalist)
         self.rawreferences = AIM_RM.readrefstring(datastring)
@@ -2431,6 +2259,9 @@ class CoupMapReader:
         self.read_references(sortedcontents)
 
     def read_identifiers(self, sortedcontents):
+        """
+        Reads/interprets the information under the 'identifiers' header
+        """
         datalist = sortedcontents.get("Identifiers", [])
         for line in datalist:
             line = line.split()
@@ -2444,6 +2275,9 @@ class CoupMapReader:
                     pass
 
     def read_coupled(self, sortedcontents):
+        """
+        reads/interprets the information under the 'coupled oscids' header
+        """
         datalist = sortedcontents.get("Coupled OscIDs", [])
         self.coupled = set()
 
@@ -2467,6 +2301,9 @@ class CoupMapReader:
                     self.coupled.add((min(first, sec), max(first, sec)))
 
     def read_Cmapdata(self, sortedcontents):
+        """
+        Reads/interprets the information under the 'cmap data' header
+        """
         datalist = sortedcontents.get("Cmap data", [])
         temp_Cmap = read_map_data(datalist)
 
@@ -2478,6 +2315,9 @@ class CoupMapReader:
                 pass
 
     def read_python_code(self, sortedcontents):
+        """
+        Reads/interprets the information under the 'python code' header
+        """
         datalist = sortedcontents.get("Python Code", [])
         codestring = "\n".join(datalist)
 
@@ -2485,6 +2325,9 @@ class CoupMapReader:
         exec(codestring, None, self.functions)
 
     def read_references(self, sortedcontents):
+        """
+        Reads/interprets the information under the 'references' header
+        """
         datalist = sortedcontents.get("References", [])
         datastring = "\n".join(datalist)
         self.references = AIM_RM.readrefstring(datastring)
@@ -2541,8 +2384,8 @@ class CoupMapReader:
 
 def extra_map_reader(FILES, RunPar):
     """
-    Called by RunParameters.__init__. Loops over the extramapdir, and tries to
-    extract info from any file ending in .map. This is done with the
+    Called by RunParameters.ReadExtraMaps. Loops over the extramapdir, and
+    tries to extract info from any file ending in .map. This is done with the
     ExtraMapReader class. When read successfully, those instances are then
     saved in a dict as values, with their ID as keys.
     """
@@ -2591,8 +2434,8 @@ def extra_map_reader(FILES, RunPar):
 
 def extra_coup_map_reader(FILES, RunPar):
     """
-    Called by RunParameters.__init__. Loops over the extramapdir, and tries to
-    extract info from any file ending in .cmap. This is done with the
+    Called by RunParameters.ReadExtraMaps. Loops over the extramapdir, and
+    tries to extract info from any file ending in .cmap. This is done with the
     CoupMapReader class. When read successfully, those instances are then
     saved in a dict as values, with their ID as keys.
     """
@@ -2760,8 +2603,6 @@ def get_settings_allowed_values():
     setdict["Verbose"] = [0, 1, 2, 3, 4]
     setdict["Verbose_log"] = [0, 1, 2, 3, 4]
     setdict["apply_dd_coupling"] = ["All", "None", "Same", "Different"]
-    # setdict["map_choice"] = ["Tokmakoff", "Skinner", "Jansen", "Custom"]
-    # setdict["Dipole_choice"] = ["Torii", "Jansen"]
     setdict["coupling_choice"] = ["TDCKrimm", "TDCTasumi", "TCC"]
     setdict["NN_coupling_choice"] = [
         "TDCKrimm", "TDCTasumi", "TCC", "Tasumi", "GLDP"]
@@ -3098,13 +2939,6 @@ def LineFormat(string):
 
     # if there is a # somewhere in the line, ignore everything after it.
     linestr = linestr.split('#')[0]
-    # check = -1
-    # for index, value in enumerate(linestr):
-    #     if value == "#":
-    #         check = index
-    #         break
-    # if check != -1:
-    #     linestr = linestr[:check]
 
     # split the line into a list
     line = linestr.split()
@@ -3189,7 +3023,7 @@ def bulkparwrite(parfile, offset, itemslist, ParStore, parstrwidth=48):
             pass
 
 
-def dummy_func(RunPar):
+def dummy_func():  # isn't called, but very important! don't remove
     """
     this is just to use the otherwise unused imports at the top, to avoid
     the warnings raised during editing this script.
@@ -3202,9 +3036,12 @@ def dummy_func(RunPar):
     vec /= AIM_MF.vec3_len(vec)
     vec = AIM_PF.Dipole_Torii(vec, vec)
 
-    met1, met2 = AIM_CF.DetCalcMeth(RunPar)
-    metarr = [met1]
-    metarr.append(met2)
+    doubvec = vec*2
+    dumarr = np.zeros((6, 3), dtype='float32')
+    J = AIM_CF.CalcTDCKr_nb(0, 1, dumarr, dumarr, vec, doubvec)
+    J *= 1
 
     timer = AIM_TK.Timer()
     timer.Endtime()
+    calc_duration = AIM_DC.timestring(timer.endtime0)
+    calc_duration += ""

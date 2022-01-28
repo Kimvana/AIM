@@ -3,6 +3,12 @@ import time
 
 
 class Timer:
+    """
+    Deals with all timing-related matters. Records and stores when certain
+    things happen (which are relative to a weird moment, and therefore not very
+    usable). Also calculates the difference between these points to determine
+    how long different parts of the calculation took.
+    """
     def __init__(self):
         """
         Record when the timer object was created

@@ -138,20 +138,6 @@ def EG_rotation(E, G, U, relevant_j):
             (0 1 0)
     """
 
-    # old version:
-    # for j in relevant_j:
-    #     E[j, :] = np.dot(rot_mat, E[j, :])
-
-    #     Gsq = np.diag(G[j, :3])
-    #     Gsq[np.triu_indices(3, k=1)] = G[j, 3:]
-    #     Gsq[np.tril_indices(3, k=-1)] = G[j, 3:]
-    #     temp = np.matmul(
-    #         np.matmul(rot_mat, Gsq),
-    #         rot_mat.transpose()
-    #     )
-    #     G[j, :3] = np.diag(temp)
-    #     G[j, 3:] = temp[np.triu_indices(3, k=1)]
-
     for j in relevant_j:
         E[j, :] = np.dot(U, E[j, :])
 

@@ -284,28 +284,11 @@ def CalcHam(FILES, RunPar, WS):
             FILES.logfilename, RunPar)
         AIM_CF.DoCoupling(FILES, RunPar, WS)
 
-    # np.savetxt(sys.stdout, WS.Hamiltonian[-5:, -5:], '%5.4f')
-
-    # with np.set_printoptions(suppress=True):
-    #     printer = WS.Hamiltonian[-5:, -5:]
-    #     print(printer)
-    #     printer = printer.round(decimals=5)
-
-    #     print(printer)
-
     if "Pos" in RunPar.output_type:
         AIM_PC.vprint(
             4, ("Starting AIM_PF.FindAtomPos"),
             FILES.logfilename, RunPar)
-        # AIM_CF.PrepCoupling(FILES, RunPar, WS)
 
-        # # write off-diagonal entries directly into hamiltonian stored in WS
-        # if RunPar.replicate_orig_AIM:
-        #     AIM_CF.CalcCoupling_origAIM(FILES, RunPar, WS)
-        # else:
-        #     AIM_CF.CalcCoupling(FILES, RunPar, WS)
-
-        # write atom positions directly into AtomPos stored in WS
         FindAtomPos(WS)
 
 
@@ -319,9 +302,6 @@ def CalcDiag(FILES, RunPar, WS):
     for AmGroup in range(WS.res_desired_len):
         Am_C = WS.AllOscGroups[AmGroup, 6]
         resnum = WS.resnums[Am_C]
-        # print(AmGroup, resnum, WS.resnames[WS.AllAmGroups[AmGroup,6]],
-        # WS.resnames[WS.AllAmGroups[AmGroup,9]], WS.AllAmGroups[AmGroup,:6],
-        # WS.AllAmGroups[AmGroup,6:12], WS.AllAmGroups[AmGroup,12:])
 
         # We want to calculate the Estatic effects only for the atoms that
         # fall within the specified SphereSize range. AGsorter returns only
@@ -334,8 +314,6 @@ def CalcDiag(FILES, RunPar, WS):
         inrange_ix = AGsorterEstat(resnum, FILES, RunPar, WS)
 
         P, E, G = CalcEstat(inrange_ix, AmGroup, FILES, RunPar, WS)
-
-        # print(AmGroup, WS.OscID[AmGroup])
 
         # regardless of map_choice, if it is a sidechain group, we need the
         # sidechain map. map_reader made sure that we have the correct map
@@ -363,15 +341,6 @@ def CalcDiag(FILES, RunPar, WS):
                 inrange_ix, AmGroup, P, E, G, rot_mat, FILES, RunPar, WS
             )
 
-        # a = [1, 3, 4, 7, 9, 10, 13, 18]
-        # b = [1, 2, 5, 6, 7, 9, 15, 18]
-        # a_c = AIM_DC.ctypelist(a, 'int32')
-        # b_c = AIM_DC.ctypelist(b, 'int32')
-        # dif_nb = AIM_SO.difference_KvA(a, b)
-        # dif_c = AIM_SO.difference_c(a_c, b_c, FILES.clib)
-        # print(dif_nb)
-        # print(dif_c[:])
-
         # Done with Hamiltonian, on to dipoles! (while a separate subroutine
         # would be nice, the Jansen method requires the Estats... don't want
         # to re calculate those... therefore, the dipoles are in here!)
@@ -386,13 +355,9 @@ def CalcDiag(FILES, RunPar, WS):
             WS.Dipoles[AmGroup, :] = dipole
             WS.TDCgen_r[AmGroup, :] = dip_r
 
-        # Raman#
         if "Ram" in RunPar.output_type:
             WS.Raman[AmGroup, :] = CalcRaman(
                 AmGroup, P, E, G, rot_mat, FILES, RunPar, WS)
-
-        # print(AIM_MF.vec3_len(WS.Dipoles[AmGroup]),
-        #       WS.Hamiltonian[AmGroup, AmGroup])
 
 
 def CalcEstat(inrange_ix, AmGroup, FILES, RunPar, WS):
@@ -611,28 +576,8 @@ def UpdateEstat(inrange_ix, AmGroup, P, E, G, rot_mat, FILES, RunPar, WS):
     # now, both changes of existing atoms and the addition of new atoms has
     # been done. Finalize the changes by merging with the original P, E, G.
     # (of course, after rotating to the correct orientation)
-
     En, Gn = AIM_MF.EG_rotation(En, Gn, rot_mat, np.arange(6))
-    # for j in range(6):
-    #     totsum = 0
-    #     totsum += abs(np.sum(Pn[j]))
-    #     totsum += abs(np.sum(En[j, :]))
-    #     totsum += abs(np.sum(Gn[j, :]))
-    #     if totsum == 0:
-    #         continue
 
-    #     P[j] += Pn[j]
-    #     E[j, :] += np.dot(rot_mat, En[j, :])
-
-    #     Gsq = np.diag(Gn[j, :3])
-    #     Gsq[np.triu_indices(3, k=1)] = Gn[j, 3:]
-    #     Gsq[np.tril_indices(3, k=-1)] = Gn[j, 3:]
-    #     temp = np.matmul(
-    #         np.matmul(rot_mat, Gsq),
-    #         rot_mat.transpose()
-    #     )
-    #     G[j, :3] = np.diag(temp)
-    #     G[j, 3:] = temp[np.triu_indices(3, k=1)]
     Pn *= RunPar.bohr2ang
     En *= RunPar.bohr2ang2
     Gn *= RunPar.bohr2ang3
@@ -789,40 +734,10 @@ def calc_freq_BB(AmGroup, P, E, G, RunPar, WS):
         Emap = WS.AllMaps.Emap.Gen.Emap
         Gmap = WS.AllMaps.Emap.Gen.Gmap
         relevant_j = WS.AllMaps.Emap.Gen.relevant_j_arr
-    # relevant_j = np.array(relevant_j, dtype='int32')
+
     E, G = AIM_MF.EG_rotation(E, G, rot_mat, relevant_j)
 
-    # print(E, G)
-    # quit()
-    # for j in relevant_j:
-    #     E[j, :] = np.dot(rot_mat, E[j, :])
-
-    #     Gsq = np.diag(G[j, :3])
-    #     Gsq[np.triu_indices(3, k=1)] = G[j, 3:]
-    #     Gsq[np.tril_indices(3, k=-1)] = G[j, 3:]
-    #     temp = np.matmul(
-    #         np.matmul(rot_mat, Gsq),
-    #         rot_mat.transpose()
-    #     )
-    #     G[j, :3] = np.diag(temp)
-    #     G[j, 3:] = temp[np.triu_indices(3, k=1)]
-
-    # freq = omega
-    # # print(P, Pmap)
-    # # print(WS.AllOscGroups[AmGroup, :])
-    # # print(WS.AllOscGroups[AmGroup+1, :])
-    # # print(WS.resnames[Am_C], WS.resnames[Am_N])
-    # # print(WS.resnames[WS.AllOscGroups[AmGroup+1, 6]],
-    # #       WS.resnames[WS.AllOscGroups[AmGroup+1, 9]])
-    # freq += np.sum(np.multiply(P, Pmap))
-    # freq += np.sum(np.multiply(E, Emap))
-    # freq += np.sum(np.multiply(G, Gmap))
-    # print(freq)
-
     freq = AIM_MF.apply_map(P, E, G, omega, Pmap, Emap, Gmap, relevant_j)
-    # print(freq)
-
-    # quit()
 
     return freq, rot_mat
 
@@ -952,9 +867,7 @@ def calcdelta(NNarray, NNmap, i, function_warning, logfilename, RunPar, WS):
     if phi_N >= 0 and phi_N < dim-1 and psi_N >= 0 and psi_N < dim-1:
         # determine lower and higher bound
         x1l = phi_N * space - 180
-        # x1h = x1l + space
         x2l = psi_N * space - 180
-        # x2h = x2l + space
 
         y1 = NNmap[psi_N, phi_N]
         y2 = NNmap[psi_N+1, phi_N]
@@ -1042,13 +955,6 @@ def CalcDipole_BB(AmGroup, P, E, G, rot_mat, RunPar, WS):
                 Emap.Gmap[xyz],
                 Emap.relevant_j_arr
             )
-            # print(mi_loc)
-            # mi_loc[xyz] = Emap[typename + "omega"][xyz]
-            # mi_loc[xyz] += np.sum(np.multiply(P, Emap[typename + "P"][xyz]))
-            # mi_loc[xyz] += np.sum(np.multiply(E, Emap[typename + "E"][xyz]))
-            # mi_loc[xyz] += np.sum(np.multiply(G, Emap[typename + "G"][xyz]))
-            # print(mi_loc)
-            # quit()
 
         mi = np.dot(mi_loc, rot_mat)
 
