@@ -45,4 +45,7 @@ Next to the python installation, AIM also makes use of the following modules, wh
 * [numba](https://numba.pydata.org/)
 * [MDAnalysis](https://www.mdanalysis.org/)
 
+We'd like to encourage the growth of an engaged community. This list will feature examples of ways to extend the capabilities of AIM. Please note that the linked projects are not an official part of AIM, and we take no responsibility in maintaining, updating, or managing them.
+* [This](https://github.com/lacourjansenlab/Parallel_AIM_script) is a simple way of running AIM in parallel. We hope to add parallel capabilities to AIM soon, but this should help in the meantime. 
+
 
