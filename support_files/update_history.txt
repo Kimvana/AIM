@@ -1,6 +1,4 @@
 
-
-
 Version 1-0-0 pre2:
 
 Updated the pre release to contain the additions/fixes of the last two weeks. This includes the ability to print used references, and some (bug)fixes.
@@ -31,3 +29,4 @@ bugfix:
 - in FileHandler, replicate_orig_AIM now overwrites the ExtraMaps_names attribute, not ExtraMaps itself.
 - in FileHandler, the hardcoded log and/or out directories are only emptied if they exist.
 - in AIMV1-0-0.cpp, one of the windows-specific headers has been fixed to correspond to the function, and the call inside AIM.
+- in FileHandler, the binary output dipoles file contained the atom positions, not the dipoles. The txt version was not affected.

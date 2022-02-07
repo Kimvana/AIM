@@ -911,7 +911,7 @@ class FileLocations:
                 Dip_bin = np.empty((WS.res_desired_len*3), dtype='float32')
                 for i in range(3):
                     for j in range(WS.res_desired_len):
-                        Dip_bin[i*WS.res_desired_len + j] = WS.AtomPos[j, i]
+                        Dip_bin[i*WS.res_desired_len + j] = WS.Dipoles[j, i]
                 framenum_arr.tofile(self.outdipfilebin)
                 Dip_bin.tofile(self.outdipfilebin)
 
