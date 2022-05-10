@@ -161,21 +161,33 @@ class FileLocations:
 
         self.backlog.append([
             1,
-            "\nRunning version " + self.script_version_print
+            "\nCopyright (c) 2022, AIM, Kim E. van Adrichem\nAll rights "
+            "reserved.\n\nPlease cite the following:\n"
+            "K. E. van Adrichem, T. L. C. Jansen. 'AIM: A Mapping Program for "
+            "Infrared Spectroscopy of Proteins'. \nIn J. Chem. Theory Comput. "
+            "18.5 (may 2022), pp. 3089--3098, "
+            "issn: 1549-9618, 1549-9626, \ndoi: 10.1021/acs.jctc.2c00113, "
+            "url: https://pubs.acs.org/doi/10.1021/acs.jctc.2c00113"
         ])
 
         self.backlog.append([
             1,
-            "\n" + "*" * 103 +
-            "\nThis is an early release of AIM, available while the "
-            "corresponding paper is being submitted. The goal\nof this early "
-            "release is to aid the scientific community. If you wish to use "
-            "this program for your\nscientific work, we'd like to ask you to "
-            "be patient with publishing: as soon as the paper is accepted,\n"
-            "the first true version will be released. That version will "
-            "include a reference and a license.\n" +
-            "*" * 103
+            "\n\nRunning version " + self.script_version_print
         ])
+
+        
+        # self.backlog.append([
+        #     1,
+        #     "\n" + "*" * 103 +
+        #     "\nThis is an early release of AIM, available while the "
+        #     "corresponding paper is being submitted. The goal\nof this early "
+        #     "release is to aid the scientific community. If you wish to use "
+        #     "this program for your\nscientific work, we'd like to ask you to "
+        #     "be patient with publishing: as soon as the paper is accepted,\n"
+        #     "the first true version will be released. That version will "
+        #     "include a reference and a license.\n" +
+        #     "*" * 103
+        # ])
 
         # if a parameter file was supplied, all parameter settings are
         # extracted from it.
@@ -2603,9 +2615,9 @@ def get_settings_allowed_values():
     setdict["Verbose"] = [0, 1, 2, 3, 4]
     setdict["Verbose_log"] = [0, 1, 2, 3, 4]
     setdict["apply_dd_coupling"] = ["All", "None", "Same", "Different"]
-    setdict["coupling_choice"] = ["TDCKrimm", "TDCTasumi", "TCC"]
+    setdict["coupling_choice"] = ["None", "TDCKrimm", "TDCTasumi", "TCC"]
     setdict["NN_coupling_choice"] = [
-        "TDCKrimm", "TDCTasumi", "TCC", "Tasumi", "GLDP"]
+        "None", "TDCKrimm", "TDCTasumi", "TCC", "Tasumi", "GLDP"]
     setdict["AtomPos_choice"] = ["C", "N", "O", "D"]
 
     return setdict

@@ -1,3 +1,21 @@
+@article{vanAdrichemJansen2022,
+  title = {AIM: A Mapping Program for Infrared Spectroscopy of Proteins},
+  shorttitle = {AIM},
+  author = {van Adrichem, Kim E. and Jansen, Thomas L. C.},
+  year = {2022},
+  month = may,
+  journal = {J. Chem. Theory Comput.},
+  volume = {18},
+  number = {5},
+  pages = {3089--3098},
+  issn = {1549-9618, 1549-9626},
+  doi = {10.1021/acs.jctc.2c00113},
+  url = {https://pubs.acs.org/doi/10.1021/acs.jctc.2c00113},
+  urldate = {2022-05-10},
+  langid = {english}
+  AIMnotes = {AIMcode}
+}
+
 @article{ToriiTasumi1998,
   title = {Ab Initio Molecular Orbital Study of the Amide I Vibrational Interactions between the Peptide Groups in Di- and Tripeptides and Considerations on the Conformation of the Extended Helix},
   author = {Torii, Hajime and Tasumi, Mitsuo},

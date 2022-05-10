@@ -279,6 +279,7 @@ def finprint_references(FILES, RunPar, WS, totaloftype):
 
     # dict of strings of refs + lists of things using them!
     allrefs = {}
+    AIMrefs = []
 
     # collect all ID's on which a certain calculation is performed
     freqID = []
@@ -317,6 +318,11 @@ def finprint_references(FILES, RunPar, WS, totaloftype):
                 break
         if found:
             usedmaptypes.append("mapPro")
+
+    for reference in FILES.OtherRefs:
+        if "AIMcode" in reference.AIMnotes:
+            refstr = str(reference)
+            AIMrefs.append(refstr)
 
     for ID in freqID:
         if ID == 0:
@@ -514,6 +520,11 @@ def finprint_references(FILES, RunPar, WS, totaloftype):
                         [],
                         coupled
                     ]
+
+    vprint(1, "\nDevelopment of the AIM program:", FILES.logfilename, RunPar)
+    for ref in AIMrefs:
+        vprint(1, ref, FILES.logfilename, RunPar)
+
 
     for refstr, used in allrefs.items():
         vprint(1, "\nFor calculating the:", FILES.logfilename, RunPar)

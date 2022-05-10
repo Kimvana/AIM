@@ -930,6 +930,7 @@ class Universe:
         self.coup_used = {}
 
         def_coup_dict = {
+            "None": 0,
             "TDCKrimm": 2,
             "TDCTasumi": 3,
             "TCC": 4,
