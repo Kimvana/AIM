@@ -5,10 +5,10 @@ import os
 import numpy as np
 
 # my lib imports
-import sourcecode.DataConversion as AIM_DC
-import sourcecode.FileHandler as AIM_FH
-import sourcecode.PrintCommands as AIM_PC
-import sourcecode.ReferenceManager as AIM_RM
+from . import DataConversion as AIM_DC
+from . import FileHandler as AIM_FH
+from . import PrintCommands as AIM_PC
+from . import ReferenceManager as AIM_RM
 
 
 class AllSourceMaps:

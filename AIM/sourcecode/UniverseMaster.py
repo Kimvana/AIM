@@ -8,12 +8,12 @@ import MDAnalysis as MDA
 import numpy as np
 
 # my lib imports
-import sourcecode.DataConversion as AIM_DC
-import sourcecode.MathFunctions as AIM_MF
-import sourcecode.PrintCommands as AIM_PC
-import sourcecode.PhysicsFunctions as AIM_PF
-import sourcecode.SourceMapreader as AIM_SM
-import sourcecode.SetOperations as AIM_SO
+from . import DataConversion as AIM_DC
+from . import MathFunctions as AIM_MF
+from . import PrintCommands as AIM_PC
+from . import PhysicsFunctions as AIM_PF
+from . import SourceMapreader as AIM_SM
+from . import SetOperations as AIM_SO
 
 
 class Universe:

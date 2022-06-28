@@ -4,11 +4,11 @@ import numpy as np
 
 
 # my lib imports:
-import sourcecode.CouplingFunctions as AIM_CF
-import sourcecode.DataConversion as AIM_DC
-import sourcecode.MathFunctions as AIM_MF
-import sourcecode.SetOperations as AIM_SO
-import sourcecode.PrintCommands as AIM_PC
+from . import CouplingFunctions as AIM_CF
+from . import DataConversion as AIM_DC
+from . import MathFunctions as AIM_MF
+from . import SetOperations as AIM_SO
+from . import PrintCommands as AIM_PC
 
 
 def calc_COM(choice, FILES, RunPar, WS):

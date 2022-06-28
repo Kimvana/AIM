@@ -1,5 +1,5 @@
 # local lib imports
-import sourcecode.DataConversion as AIM_DC
+from . import DataConversion as AIM_DC
 
 
 # If any function here takes up too much time.... Is it worth it to switch to

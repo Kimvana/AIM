@@ -10,16 +10,16 @@ import traceback
 import numpy as np
 
 # my lib imports
-import sourcecode.CouplingFunctions as AIM_CF  # just here for .(c)map support
-import sourcecode.DataConversion as AIM_DC  # just here for .(c)map support
-import sourcecode.MathFunctions as AIM_MF  # just here for .(c)map support
-import sourcecode.PrintCommands as AIM_PC
-import sourcecode.PhysicsFunctions as AIM_PF  # just here for .(c)map support
-import sourcecode.ReferenceManager as AIM_RM
-import sourcecode.SourceMapreader as AIM_SM
-import sourcecode.SetOperations as AIM_SO  # just here for .(c)map support
-import sourcecode.TimeKeeping as AIM_TK  # just here for .(c)map support
-import sourcecode.UniverseMaster as AIM_UM
+from . import CouplingFunctions as AIM_CF  # just here for .(c)map support
+from . import DataConversion as AIM_DC  # just here for .(c)map support
+from . import MathFunctions as AIM_MF  # just here for .(c)map support
+from . import PrintCommands as AIM_PC
+from . import PhysicsFunctions as AIM_PF  # just here for .(c)map support
+from . import ReferenceManager as AIM_RM
+from . import SourceMapreader as AIM_SM
+from . import SetOperations as AIM_SO  # just here for .(c)map support
+from . import TimeKeeping as AIM_TK  # just here for .(c)map support
+from . import UniverseMaster as AIM_UM
 
 
 class FileLocations:
@@ -97,8 +97,9 @@ class FileLocations:
         # Defining some very basic parameters
 
         # the full path to the directory in which this script is saved
-        self.script_dir = scriptlocation
+        self.script_dir = os.path.abspath(os.path.dirname(scriptlocation))
         self.curr_work_dir = os.getcwd()
+        scriptlocation = self.script_dir
 
         # the current date and time
         self.now = datetime.datetime.now()

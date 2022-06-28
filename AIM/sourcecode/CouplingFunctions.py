@@ -3,10 +3,10 @@ from numba import njit
 import numpy as np
 
 # own lib imports
-import sourcecode.DataConversion as AIM_DC
-import sourcecode.MathFunctions as AIM_MF
-import sourcecode.PrintCommands as AIM_PC
-import sourcecode.PhysicsFunctions as AIM_PF
+from . import DataConversion as AIM_DC
+from . import MathFunctions as AIM_MF
+from . import PrintCommands as AIM_PC
+from . import PhysicsFunctions as AIM_PF
 
 
 def DoCoupling(FILES, RunPar, WS):

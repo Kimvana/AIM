@@ -2,7 +2,7 @@
 import sys
 
 # my lib imports
-import sourcecode.DataConversion as AIM_DC
+from . import DataConversion as AIM_DC
 
 
 def vprint(threshold, texttoprint, logfilename, RunPar):
