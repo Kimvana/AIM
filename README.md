@@ -26,7 +26,7 @@ When using the program, please cite [J. Chem. Theory Comput. 2022, 18, 5, 3089â€
 
 If you have discovered a bug or other issue with the code, please use the [issues](https://github.com/Kimvana/AIM/issues) section. Please check if the issue is already known. If not, feel free to make a new issue! For more information on how to make the issues most helpful for us, please check the manual. 
 
-If you have a general question/remark/suggestion, please uses the [discussions](https://github.com/Kimvana/AIM/discussions) section. If others had the same question, the answer might already be there. Otherwise, feel free to ask!
+If you have a general question/remark/suggestion, please uses the [discussions](https://github.com/Kimvana/AIM/discussions) section. If others had the same question, the answer might already be there. Otherwise, feel free to ask! Active discussions are shown automatically, answered questions can be found by setting the filter to 'closed', or 'all'.
 
 
 ## Links
