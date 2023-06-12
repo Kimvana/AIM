@@ -10,7 +10,7 @@ TIMER = AIM_TK.Timer()
 
 # very basic: finds hard-coded log, output and sourcefiles dirs. Cleans up the
 # log and output dirs. Determines the start time and OS used for this run.
-FILES = AIM_FH.FileLocations(sys.path[0], "V1-0-1", "1.0.1")
+FILES = AIM_FH.FileLocations(sys.path[0], "V1-0-2", "1.0.2")
 
 # A lot of parameter processing. Finds the requested and default parameters,
 # solves any issues/clashes with the chosen parameter settings. Checks if all
