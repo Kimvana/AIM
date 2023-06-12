@@ -33,8 +33,8 @@ The main difference of this branch is the fact that this version is installable.
 When installing the program, you are installing it as a new module into your own python environment. It is good practice to create a separate environment for different projects, as they might use different versions of modules. If you would like to use a separate environment for AIM (as I would highly recommend), please read up on venv's (virtual environments). For those vaguely familiar, these are the commands you need to use (note you can replace ```python3``` with ```python```, depending on how you normally use python):
 Using ```python3 -m venv env_AIM``` will create a virtual environment in the current working directory.
 Activate the environment by running
-* (Unix)  ```source env_GMAP/bin/activate```
-* (Windows) ```env_GMAP\Scripts\activate.bat``` (doesn't work in powershell)
+* (Unix)  ```source env_AIM/bin/activate```
+* (Windows) ```env_AIM\Scripts\activate.bat``` (doesn't work in powershell)
 
 Now, there's two options.
 1. You can clone this repo to a folder on your computer, and navigate there. Another option is to download the entire repo from the website. PLEASE make sure you have the correct branch, as this installable version is not the main branch. Then, run ```python3 -m pip install .```. Note the period! 
