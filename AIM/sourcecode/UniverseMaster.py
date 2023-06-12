@@ -545,6 +545,10 @@ class Universe:
                 (n_res-1+dict_of_cycles[molnum], 6),
                 dtype='int32'
             )
+            found_atoms = np.ones(
+                (n_res - 1 + dict_of_cycles[molnum], 6),
+                dtype='int32'
+            )
 
             # now, fill the array with atoms:
             for locresnum, resnum in enumerate(molres):
@@ -561,13 +565,17 @@ class Universe:
                         # save the atoms. 0->C_x, 1->O_x, 2->CA_x
                         if atname in RunPar.atnames["C"]:
                             relevant_atoms[locresnum, 0] = atnum
+                            found_atoms[locresnum, 0] = 0
                         elif atname in RunPar.atnames["O"]:
                             relevant_atoms[locresnum, 1] = atnum
+                            found_atoms[locresnum, 1] = 0
                         elif atname in RunPar.atnames["CA"]:
                             relevant_atoms[locresnum, 2] = atnum
+                            found_atoms[locresnum, 2] = 0
                         elif resname == "FOR":
                             if atname == "H":
                                 relevant_atoms[locresnum, 2] = atnum
+                                found_atoms[locresnum, 2] = 0
 
                     # if it is not the first residue of linear chain
                     if locresnum != 0 or dict_of_cycles[molnum]:
@@ -575,22 +583,50 @@ class Universe:
                         # 5->CA_x+1
                         if atname in RunPar.atnames["N"]:
                             relevant_atoms[locresnum-1, 3] = atnum
+                            found_atoms[locresnum-1, 3] = 0
                         elif atname in RunPar.atnames["H"]:
                             relevant_atoms[locresnum-1, 4] = atnum
+                            found_atoms[locresnum-1, 4] = 0
                         elif atname in RunPar.atnames["CA"]:
                             relevant_atoms[locresnum-1, 5] = atnum
+                            found_atoms[locresnum-1, 5] = 0
                         elif resname == "ETA":
                             if atname == "C2":
                                 relevant_atoms[locresnum-1, 5] = atnum
+                                found_atoms[locresnum-1, 5] = 0
                         elif resname == "GL2":
                             if atname == "H1":
                                 relevant_atoms[locresnum-1, 4] = atnum
+                                found_atoms[locresnum-1, 4] = 0
                             if atname == "H2":
                                 relevant_atoms[locresnum-1, 5] = atnum
+                                found_atoms[locresnum-1, 5] = 0
                         if resname == "PRO":
                             if atname == "CD":
                                 relevant_atoms[locresnum-1, 4] = atnum
+                                found_atoms[locresnum-1, 4] = 0
             dict_of_BBCOatoms[molnum] = relevant_atoms
+
+            if np.sum(found_atoms) != 0:
+                problem_atoms = np.sum(found_atoms, axis=0)
+                problem_dict = {
+                    0: "C", 1: "O", 2: "CA", 3: "N", 4: "H", 5: "CA"
+                }
+                problem_txt = ", ".join([
+                    problem_dict[ix] for ix, summed in enumerate(problem_atoms)
+                    if summed != 0
+                ])
+                ErrorText = (
+                    "Chain " + str(molnum) + " containing residues " +
+                    str(molres[0]) + " - " + str(molres[-1]) +
+                    " contains " + str(np.sum(found_atoms)) +
+                    " atoms which are needed for amide groups, but could " +
+                    "not be identified. These atoms are of type " + problem_txt
+                    + ". If you are missing many atoms of a single type, "
+                    "please check if your atoms have the same name as reported"
+                    " in the used atnames file. Quitting!"
+                )
+                AIM_PC.warning(ErrorText, True, 0, logfilename, RunPar)
 
         return dict_of_BBCOatoms, dict_of_cycles
 
@@ -848,7 +884,7 @@ class Universe:
         function_warning = 0
         self.PreCalc(TIMER, FILES, RunPar)
 
-        for frame in self.trj:
+        for frame in self.trj[RunPar.start_frame:]:
             # if frame number is too large, quit.
             self.framenum = frame.frame
             if self.framenum < RunPar.start_frame:
