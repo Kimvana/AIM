@@ -913,6 +913,8 @@ class Universe:
             # if anything needs to happen to the map on a per-frame basis.
             for exmap in RunPar.ExtraMaps.values():
                 exmap.functions["pre_frame"](FILES, RunPar, self, exmap)
+            for coupmap in RunPar.CouplingMaps.values():
+                coupmap.functions["pre_frame"](FILES, RunPar, self, coupmap)
 
             AIM_PC.vprint(
                 4, ("Frame initialization complete, starting calculating "
@@ -923,6 +925,11 @@ class Universe:
                 4,
                 "finished calculating Hamiltonian, writing ham to file",
                 FILES.logfilename, RunPar)
+
+            for exmap in RunPar.ExtraMaps.values():
+                exmap.functions["post_frame"](FILES, RunPar, self, exmap)
+            for coupmap in RunPar.CouplingMaps.values():
+                coupmap.functions["post_calc"](FILES, RunPar, self, coupmap)
 
             FILES.WriteOutput(RunPar, self)
 
@@ -1308,6 +1315,13 @@ class Universe:
             FILES.logfilename, RunPar)
 
         totaloftype = AIM_PC.finprint_composition(FILES, RunPar, self)
+
+        AIM_PC.vprintl(1, ["\n", "\nNotes from maps:"], FILES.logfilename, RunPar)
+
+        for exmap in RunPar.ExtraMaps.values():
+            exmap.functions["post_calc"](FILES, RunPar, self, exmap)
+        for coupmap in RunPar.CouplingMaps.values():
+            coupmap.functions["post_calc"](FILES, RunPar, self, coupmap)
 
         AIM_PC.finprint_frames(FILES, RunPar, self)
 

@@ -92,6 +92,14 @@ def pre_frame(FILES, RunPar, WS, Map):
     pass
 
 
+def post_frame(FILES, RunPar, WS, Map):
+    pass
+
+
+def post_calc(FILES, RunPar, WS, Map):
+    pass
+
+
 def calc_freq(P, E, G, AmGroup, FILES, RunPar, WS, Map):
     # AIM calculates fields in units of e and angstrom, but these maps are
     # in bohr...

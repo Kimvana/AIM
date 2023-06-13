@@ -20,7 +20,19 @@ defmap dud
 
     [  Python Code  ]
 
-def pre_calc(FILES, RunPar, WS, coupmap):
+def pre_calc(FILES, RunPar, WS, Map):
+    pass
+
+
+def pre_frame(FILES, RunPar, WS, Map):
+    pass
+
+
+def post_frame(FILES, RunPar, WS, Map):
+    pass
+
+
+def post_calc(FILES, RunPar, WS, Map):
     pass
 
 
