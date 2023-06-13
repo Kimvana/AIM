@@ -68,6 +68,14 @@ def pre_frame(FILES, RunPar, WS, Map):
     pass
 
 
+def post_frame(FILES, RunPar, WS, Map):
+    pass
+
+
+def post_calc(FILES, RunPar, WS, Map):
+    pass
+
+
 def calc_freq(P, E, G, OscGroup, FILES, RunPar, WS, Map):
 
     # now, the fields have to be oriented in the correct direction.

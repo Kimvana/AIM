@@ -24,6 +24,18 @@ def pre_calc(FILES, RunPar, WS, coupmap):
     pass
 
 
+def pre_frame(FILES, RunPar, WS, coupmap):
+    pass
+
+
+def post_frame(FILES, RunPar, WS, coupmap):
+    pass
+
+
+def post_calc(FILES, RunPar, WS, coupmap):
+    pass
+
+
 def prep_coupling(FILES, RunPar, WS, coupmap):
     # called once for every frame, to do some preparations, if desired
     pass

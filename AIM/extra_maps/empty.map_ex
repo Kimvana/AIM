@@ -44,6 +44,14 @@ def pre_frame(FILES, RunPar, WS, Map):
     pass
 
 
+def post_frame(FILES, RunPar, WS, Map):
+    pass
+
+
+def post_calc(FILES, RunPar, WS, Map):
+    pass
+
+
 def calc_freq(P, E, G, OscGroup, FILES, RunPar, WS, Map):
     # return the calculated frequency, and the used rotation matrix.
     return 0, np.zeros((3, 3), dtype='float32')
