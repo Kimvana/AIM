@@ -544,13 +544,11 @@ def CalcTasumi(AmGroupi, AmGroupj, FILES, RunPar, WS):
     phi_ang = round(AIM_MF.dihedral(
         WS.positions[bond[0], :], WS.positions[bond[3], :],
         WS.positions[bond[5], :], WS.positions[bond[6], :],
-        WS.halfbox, WS.boxdims, 4)
-        ) * (180/3.1416)
+        WS.halfbox, WS.boxdims) * 180 / np.pi, 4)
     psi_ang = round(AIM_MF.dihedral(
         WS.positions[bond[3], :], WS.positions[bond[5], :],
         WS.positions[bond[6], :], WS.positions[bond[9], :],
-        WS.halfbox, WS.boxdims
-        ) * (180/3.1416), 4)
+        WS.halfbox, WS.boxdims) * 180 / np.pi, 4)
 
     phi_N = int((phi_ang+180)//30)
     psi_N = int((psi_ang+180)//30)
