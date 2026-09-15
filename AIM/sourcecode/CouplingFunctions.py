@@ -541,16 +541,16 @@ def CalcTasumi(AmGroupi, AmGroupj, FILES, RunPar, WS):
     elif WS.AllOscGroups[AmGroupi, 12] == WS.AllOscGroups[AmGroupj, 8]:
         bond = WS.AllOscGroups[AmGroupi, 6:]
 
-    phi_ang = AIM_MF.dihedral(
+    phi_ang = round(AIM_MF.dihedral(
         WS.positions[bond[0], :], WS.positions[bond[3], :],
         WS.positions[bond[5], :], WS.positions[bond[6], :],
-        WS.halfbox, WS.boxdims
+        WS.halfbox, WS.boxdims, 4)
         ) * (180/3.1416)
-    psi_ang = AIM_MF.dihedral(
+    psi_ang = round(AIM_MF.dihedral(
         WS.positions[bond[3], :], WS.positions[bond[5], :],
         WS.positions[bond[6], :], WS.positions[bond[9], :],
         WS.halfbox, WS.boxdims
-        ) * (180/3.1416)
+        ) * (180/3.1416), 4)
 
     phi_N = int((phi_ang+180)//30)
     psi_N = int((psi_ang+180)//30)

@@ -846,14 +846,14 @@ def calcdelta(NNarray, NNmap, i, function_warning, logfilename, RunPar, WS):
     space = 30
 
     # calculate the ramachandran angles
-    phi_ang = AIM_MF.dihedral(
+    phi_ang = round(AIM_MF.dihedral(
         WS.positions[NNarray[i], :], WS.positions[NNarray[i+3], :],
         WS.positions[NNarray[i+5], :], WS.positions[NNarray[i+6], :],
-        WS.halfbox, WS.boxdims) * 180 / np.pi
-    psi_ang = AIM_MF.dihedral(
+        WS.halfbox, WS.boxdims) * 180 / np.pi, 4)
+    psi_ang = round(AIM_MF.dihedral(
         WS.positions[NNarray[i+3], :], WS.positions[NNarray[i+5], :],
         WS.positions[NNarray[i+6], :], WS.positions[NNarray[i+9], :],
-        WS.halfbox, WS.boxdims) * 180 / np.pi
+        WS.halfbox, WS.boxdims) * 180 / np.pi, 4)
 
     # binning: see between which values (only lower bound is found as upper
     # is just 1 further) the angles fall
